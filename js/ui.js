@@ -94,6 +94,10 @@
     soundCueRoot = document.getElementById('soundCueRoot');
     gameRoot = document.getElementById('gameRoot');
     buildWeather();
+    $$('.tab').forEach(function (button) {
+      button.id = 'tab-' + button.dataset.tab;
+      button.setAttribute('aria-controls', 'tabPanel');
+    });
   }
 
   function themeInfo(state, time) {
@@ -299,12 +303,25 @@
       alerts = [{ text: next ? 'Tudo em dia! Faltam ' + Math.max(0, next.care - pet.care) + ' cuidados e ' + Math.max(0, Math.ceil(next.min - pet.age)) + ' min para evoluir.' : 'Tudo em dia! Seu bichinho chegou à última fase.', action: '', label: '' }];
     }
     var next = E.nextRoutine(state);
+    var quick = null;
+    if (!alerts.some(function (alert) { return alert.action; }) && pet.status === 'alive') {
+      if (pet.illness || pet.health < 40) quick = { action: 'care-menu', label: 'Cuidar', icon: '💊', text: 'A saúde precisa de atenção agora.' };
+      else if (pet.hunger < 20) quick = { action: 'open-inventory', filter: 'food', label: 'Alimentar', icon: '🍗', text: 'Dê um lanche rápido para recuperar a fome.' };
+      else if (pet.energy < 20) quick = { action: 'free', kind: 'sleep', label: 'Dormir', icon: '😴', text: 'Um descanso rápido vai recuperar a energia.' };
+      else if (pet.hygiene < 20) quick = { action: 'open-inventory', filter: 'care', label: 'Banho', icon: '🛁', text: 'Hora de um banho para ficar limpinho.' };
+      else if (pet.happiness < 20) quick = { action: 'free', kind: 'pet', label: 'Carinho', icon: '🤗', text: 'Um carinho rápido melhora o humor.' };
+    }
     mount.innerHTML = alerts.map(function (alert) {
       var cls = pet.status === 'critical' ? 'critical' : (alert.action ? '' : ' ok');
       return '<div class="alert-row ' + cls + '">🔔 <span>' + esc(alert.text) + '</span>' +
         (alert.action ? '<button class="alert-action" type="button" data-action="' + alert.action + '">' + esc(alert.label) + '</button>' : '') +
       '</div>';
-    }).join('') + (next ? '<div class="alert-row routine">🗓️ <span>Próxima rotina: ' + next.emoji + ' ' + next.label + ' às ' + next.time + '</span></div>' : '');
+    }).join('') +
+      (quick ? '<div class="alert-row quick">' + quick.icon + ' <span>' + esc(quick.text) + '</span>' +
+        '<button class="alert-action" type="button" data-action="' + quick.action + '"' +
+        (quick.filter ? ' data-filter="' + quick.filter + '"' : '') +
+        (quick.kind ? ' data-kind="' + quick.kind + '"' : '') + '>' + esc(quick.label) + '</button></div>' : '') +
+      (next ? '<div class="alert-row routine">🗓️ <span>Próxima rotina: ' + next.emoji + ' ' + next.label + ' às ' + next.time + '</span></div>' : '');
   }
 
   function itemCard(item, state, pet, mode) {
@@ -746,9 +763,15 @@
     var pet = E.activePet(state);
     if (!pet) return;
     if (tab) activeTab = tab;
-    $$('.tab').forEach(function (button) { button.classList.toggle('active', button.dataset.tab === activeTab); });
+    $$('.tab').forEach(function (button) {
+      var active = button.dataset.tab === activeTab;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', active ? 'true' : 'false');
+      button.tabIndex = active ? 0 : -1;
+    });
     var panel = $('#tabPanel');
     if (!panel) return;
+    panel.setAttribute('aria-labelledby', 'tab-' + activeTab);
     if (activeTab === 'inventory') panel.innerHTML = inventoryMarkup(state, pet, filter || 'all');
     else if (activeTab === 'shop') panel.innerHTML = shopMarkup(state, pet);
     else if (activeTab === 'craft') panel.innerHTML = craftMarkup(state);

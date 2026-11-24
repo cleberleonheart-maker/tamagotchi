@@ -9,13 +9,14 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="TamaVida">
-  <link rel="manifest" href="manifest.json?v=35">
+  <link rel="manifest" href="manifest.json?v=36">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
-  <link rel="stylesheet" href="styles.css?v=35">
+  <link rel="stylesheet" href="styles.css?v=36">
   <title>TamaVida — Seu Tamagotchi</title>
 </head>
 <body data-theme="night">
+  <a class="skip-link" href="#sectionPet">Pular para o conteúdo</a>
   <div class="app-shell">
     <header class="topbar" id="topbar">
       <div class="brand">
@@ -30,6 +31,7 @@
 
       <div class="topbar-actions">
         <div class="coin-chip" title="Moedas"><span>🪙</span><b id="coinCount">0</b></div>
+        <button class="icon-btn" id="installBtn" type="button" title="Instalar aplicativo" aria-label="Instalar aplicativo" hidden>📲</button>
         <button class="icon-btn" id="soundBtn" type="button" title="Som" aria-label="Ativar ou desativar som">🔊</button>
         <button class="icon-btn" id="settingsBtn" type="button" title="Configurações" aria-label="Configurações">⚙️</button>
       </div>
@@ -139,7 +141,7 @@
             <button class="tab" data-tab="diary" role="tab" type="button">📖 Diário</button>
             <button class="tab" data-tab="chart" role="tab" type="button">📈 Gráfico</button>
           </div>
-          <div class="tab-panel" id="tabPanel"></div>
+          <div class="tab-panel" id="tabPanel" role="tabpanel" tabindex="0"></div>
         </div>
       </section>
 
@@ -193,11 +195,11 @@
   <div id="soundCueRoot" aria-live="polite"></div>
   <div id="onboardingRoot"></div>
 
-  <script src="js/data.js?v=35"></script>
-  <script src="js/audio.js?v=35"></script>
-  <script src="js/engine.js?v=35"></script>
-  <script src="js/games.js?v=35"></script>
-  <script src="js/ui.js?v=35"></script>
-  <script src="js/app.js?v=35"></script>
+  <script src="js/data.js?v=36"></script>
+  <script src="js/audio.js?v=36"></script>
+  <script src="js/engine.js?v=36"></script>
+  <script src="js/games.js?v=36"></script>
+  <script src="js/ui.js?v=36"></script>
+  <script src="js/app.js?v=36"></script>
 </body>
 </html>

@@ -16,6 +16,7 @@
   var unlockedCache = [];
   var questCache = [];
   var weeklyCache = [];
+  var installPrompt = null;
 
   function persist() { E.save(state); }
 
@@ -828,6 +829,18 @@
       return;
     }
     if (document.querySelector('.game-overlay') || document.querySelector('.overlay')) return;
+    if (event.target && event.target.classList && event.target.classList.contains('tab') && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+      event.preventDefault();
+      var tabs = $$('.tab');
+      var index = tabs.indexOf(event.target);
+      if (index !== -1) {
+        var next = tabs[(index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
+        next.focus();
+        next.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        next.click();
+      }
+      return;
+    }
     if (currentTab === 'adventure' && state.adventure && state.adventure.battle) {
       var battleMove = { '1': 'attack', '2': 'defend', '3': 'item', '4': 'flee' }[event.key];
       if (battleMove) {
@@ -957,6 +970,53 @@
       UI.toast(state.settings.sound ? 'Som ativado 🔊' : 'Som desativado 🔇', 'info');
     });
     document.getElementById('settingsBtn').addEventListener('click', function () { perform('settings'); });
+    var installBtn = document.getElementById('installBtn');
+    if (installBtn) {
+      installBtn.addEventListener('click', function () {
+        A.play('click');
+        if (installPrompt) {
+          installPrompt.prompt();
+          if (installPrompt.userChoice && installPrompt.userChoice.then) {
+            installPrompt.userChoice.then(function (choice) {
+              if (choice && choice.outcome === 'accepted') UI.toast('TamaVida instalado! 🎉', 'good');
+              installPrompt = null;
+              installBtn.hidden = true;
+            });
+          } else {
+            installPrompt = null;
+            installBtn.hidden = true;
+          }
+          return;
+        }
+        var ios = /iphone|ipad|ipod/i.test(navigator.userAgent || '') && !window.MSStream;
+        var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone;
+        if (ios && !standalone) {
+          UI.openModal({
+            title: '📲 Instalar no iPhone/iPad',
+            sub: 'O Safari não mostra o prompt automático.',
+            body: '<p>Toque em <b>Compartilhar</b> no Safari e depois em <b>Adicionar à Tela de Início</b>.</p>',
+            actions: [{ label: 'Entendi', cls: 'primary' }]
+          });
+        } else {
+          UI.toast('Use o menu do navegador para instalar o app.', 'info');
+        }
+      });
+      var standaloneNow = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone;
+      if (standaloneNow) installBtn.hidden = true;
+    }
+
+    global.addEventListener('beforeinstallprompt', function (event) {
+      event.preventDefault();
+      installPrompt = event;
+      var button = document.getElementById('installBtn');
+      if (button) button.hidden = false;
+    });
+    global.addEventListener('appinstalled', function () {
+      installPrompt = null;
+      var button = document.getElementById('installBtn');
+      if (button) button.hidden = true;
+      UI.toast('TamaVida instalado! 🎉', 'good');
+    });
 
     scheduleReminders();
     setInterval(onTick, 1000);
@@ -989,8 +1049,18 @@
 
     var params = new URLSearchParams(location.search);
     var deepAction = params.get('action');
-    if (deepAction === 'feed') setTimeout(function () { perform('open-inventory', { filter: 'food' }); }, 400);
-    if (deepAction === 'play') setTimeout(function () { perform('go-games'); }, 400);
+    if (deepAction === 'feed' || deepAction === 'play') {
+      try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { /* noop */ }
+      var runDeepLink = function () {
+        if (document.querySelector('.overlay')) {
+          setTimeout(runDeepLink, 500);
+          return;
+        }
+        if (deepAction === 'feed') perform('open-inventory', { filter: 'food' });
+        if (deepAction === 'play') perform('go-games');
+      };
+      setTimeout(runDeepLink, 400);
+    }
   }
 
   global.TamaApp = {
