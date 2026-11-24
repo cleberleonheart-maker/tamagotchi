@@ -618,7 +618,34 @@
           persist();
         },
         onSlotSave: saveToSlot,
-        onSlotLoad: loadFromSlot
+        onSlotLoad: loadFromSlot,
+        onCheckUpdate: function (button) {
+          if (!('serviceWorker' in navigator)) {
+            UI.toast('Atualização disponível só no modo app/navegador compatível.', 'info');
+            return;
+          }
+          if (button) { button.disabled = true; button.textContent = '⏳ Verificando...'; }
+          navigator.serviceWorker.getRegistration().then(function (registration) {
+            if (!registration) {
+              UI.toast('Service worker não registrado. Abra pelo servidor/app instalado.', 'bad');
+              return;
+            }
+            return registration.update().then(function () {
+              if (registration.waiting) {
+                UI.toast('Atualização pronta. Confirme para aplicar.', 'good');
+                UI.showConfirm('⬆️ Atualização disponível', 'Uma nova versão do TamaVida está pronta.', '<p>Recarregue para usar as melhorias mais recentes.</p>', function () {
+                  registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }, 'Atualizar agora');
+              } else {
+                UI.toast('Você já está na versão mais recente.', 'info');
+              }
+            });
+          }).catch(function () {
+            UI.toast('Não foi possível verificar atualização agora.', 'bad');
+          }).finally(function () {
+            if (button) { button.disabled = false; button.textContent = '⬆️ Verificar atualização'; }
+          });
+        }
       });
       A.play('click');
       return { ok: true };

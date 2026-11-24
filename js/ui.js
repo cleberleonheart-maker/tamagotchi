@@ -1282,7 +1282,8 @@
             '<button class="mini-btn" type="button" data-slot-save="' + slot.index + '">Salvar</button>' +
             '<button class="mini-btn" type="button" data-slot-load="' + slot.index + '"' + (slot.savedAt ? '' : ' disabled') + '>Carregar</button></div>';
         }).join('') + '</div></div>' +
-      '<p class="muted" style="margin-top:12px">Atalhos: <b>Espaço</b> faz carinho, <b>C</b> abre a loja, <b>J</b> inicia um minigame, <b>Esc</b> fecha janelas.</p>',
+      '<p class="muted" style="margin-top:12px">Atalhos: <b>Espaço</b> faz carinho, <b>C</b> abre a loja, <b>J</b> inicia um minigame, <b>?</b> abre ajuda, <b>Esc</b> fecha janelas.</p>' +
+      '<div class="data-actions" style="margin-top:10px"><button class="ghost-btn" type="button" data-check-update>⬆️ Verificar atualização</button></div>',
       actions: [{ label: 'Pronto', cls: 'primary' }],
       onMount: function (modal) {
         $$('[data-toggle]', modal).forEach(function (button) {
@@ -1326,9 +1327,14 @@
         $$('[data-slot-load]', modal).forEach(function (button) {
           button.addEventListener('click', function () {
             if (handlers && handlers.onSlotLoad) handlers.onSlotLoad(Number(button.dataset.slotLoad));
-            closeModal();
           });
         });
+        var checkUpdate = $('[data-check-update]', modal);
+        if (checkUpdate) {
+          checkUpdate.addEventListener('click', function () {
+            if (handlers && handlers.onCheckUpdate) handlers.onCheckUpdate(checkUpdate);
+          });
+        }
       }
     });
   }
