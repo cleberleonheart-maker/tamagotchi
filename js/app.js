@@ -304,17 +304,25 @@
     persist();
   }
 
+  function haptic(pattern) {
+    try {
+      if (navigator.vibrate && state && state.settings && state.settings.vibration !== false) navigator.vibrate(pattern || 12);
+    } catch (e) { /* noop */ }
+  }
+
   function afterAction(result, options) {
     options = options || {};
     if (!result || !result.ok) {
       if (result && result.msg) UI.toast(result.msg, 'bad');
       A.play('error');
+      haptic([18, 40, 18]);
       return result;
     }
     if (result.msg) UI.toast(result.msg, options.type || 'good');
     if (options.sound) A.play(options.sound);
     if (options.fx) UI.playFx(options.fx, options.fxCount || 3);
     if (options.actionFx) UI.setActionFx(options.actionFx);
+    if (options.haptic) haptic(options.haptic);
     achievementDiff(options.achievementsBefore || unlockedCache, Object.keys(state.achievements));
     questDiff(options.questsBefore || questCache);
     weeklyDiff(options.weeklyBefore || weeklyCache);
@@ -340,12 +348,12 @@
       outcome = rewardOf(function () { return E.freeAction(state, data.kind); });
       var sound = { sleep: 'sleep', train: 'game', pet: 'happy', talk: 'click' }[data.kind];
       var emoji = { pet: '💜', talk: '💬', train: '💪', sleep: '💤' }[data.kind];
-      return afterAction(outcome.result, { sound: sound, fx: emoji, fxCount: data.kind === 'pet' ? 4 : 2, achievementsBefore: outcome.before, questsBefore: outcome.questsBefore });
+      return afterAction(outcome.result, { sound: sound, fx: emoji, fxCount: data.kind === 'pet' ? 4 : 2, haptic: 10, achievementsBefore: outcome.before, questsBefore: outcome.questsBefore });
     }
 
     if (action === 'daily-checkin') {
       var checkinResult = E.dailyCheckin(state);
-      return afterAction(checkinResult, { sound: checkinResult.ok ? 'coin' : 'error', fx: checkinResult.ok ? '🎁' : null, fxCount: 5, type: 'info' });
+      return afterAction(checkinResult, { sound: checkinResult.ok ? 'coin' : 'error', fx: checkinResult.ok ? '🎁' : null, fxCount: 5, haptic: checkinResult.ok ? [12, 30, 12] : 0, type: 'info' });
     }
 
     if (action === 'plant-crop') {
@@ -582,6 +590,11 @@
         afterAction(outcome.result, { sound: 'level', fx: '🌟', fxCount: 6, achievementsBefore: outcome.before, questsBefore: outcome.questsBefore, weeklyBefore: outcome.weeklyBefore });
       });
       A.play('click');
+      return { ok: true };
+    }
+
+    if (action === 'help') {
+      UI.showHelp();
       return { ok: true };
     }
 
@@ -828,6 +841,11 @@
       else UI.closeModal();
       return;
     }
+    if (event.key === '?' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+      event.preventDefault();
+      perform('help');
+      return;
+    }
     if (document.querySelector('.game-overlay') || document.querySelector('.overlay')) return;
     if (event.target && event.target.classList && event.target.classList.contains('tab') && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
       event.preventDefault();
@@ -1033,7 +1051,29 @@
     global.addEventListener('beforeunload', persist);
 
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
-      navigator.serviceWorker.register('service-worker.js').catch(function () { /* noop */ });
+      navigator.serviceWorker.register('service-worker.js').then(function (registration) {
+        if (!registration) return;
+        var promptUpdate = function (worker) {
+          if (!worker || document.querySelector('.overlay')) return;
+          UI.showConfirm('⬆️ Atualização disponível', 'Uma nova versão do TamaVida está pronta.', '<p>Recarregue para usar as melhorias mais recentes.</p>', function () {
+            worker.postMessage({ type: 'SKIP_WAITING' });
+          }, 'Atualizar agora');
+        };
+        if (registration.waiting && navigator.serviceWorker.controller) promptUpdate(registration.waiting);
+        registration.addEventListener('updatefound', function () {
+          var worker = registration.installing;
+          if (!worker) return;
+          worker.addEventListener('statechange', function () {
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) promptUpdate(worker);
+          });
+        });
+        var refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          if (refreshing) return;
+          refreshing = true;
+          window.location.reload();
+        });
+      }).catch(function () { /* noop */ });
     }
 
     if (!state.pets.length) {

@@ -928,6 +928,9 @@ body[data-theme='day'] .field input, body[data-theme='day'] .field textarea, bod
 .slot-row small { display: block; color: var(--muted); font-size: .62rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0; }
 .summary-row { display: flex; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); font-size: .76rem; }
+.help-grid { display: grid; gap: 8px; }
+.help-row { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 9px 10px; border-radius: 10px; background: var(--surface-2); font-size: .78rem; }
+.help-row kbd { display: inline-block; min-width: 28px; padding: 2px 7px; border-radius: 7px; border: 1px solid var(--border-strong); background: rgba(255,255,255,.08); font: inherit; font-size: .72rem; text-align: center; }
 
 /* ---------- Responsivo ---------- */
 @media (max-width: 1240px) {

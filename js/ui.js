@@ -1219,6 +1219,23 @@
     });
   }
 
+  function showHelp() {
+    openModal({
+      title: '❓ Ajuda rápida',
+      sub: 'Atalhos e dicas do TamaVida',
+      body: '<div class="help-grid">' +
+        '<div class="help-row"><span><kbd>Espaço</kbd></span><span>Fazer carinho</span></div>' +
+        '<div class="help-row"><span><kbd>C</kbd></span><span>Abrir loja</span></div>' +
+        '<div class="help-row"><span><kbd>J</kbd></span><span>Minigame aleatório</span></div>' +
+        '<div class="help-row"><span><kbd>?</kbd></span><span>Abrir esta ajuda</span></div>' +
+        '<div class="help-row"><span><kbd>Esc</kbd></span><span>Fechar janela/minigame</span></div>' +
+        '<div class="help-row"><span><kbd>←</kbd> <kbd>→</kbd></span><span>Navegar entre abas</span></div>' +
+        '</div>' +
+        '<p class="muted" style="margin-top:12px">Dica: use 📲 para instalar o app e jogar offline. Feche e abra o app para aplicar atualizações.</p>',
+      actions: [{ label: 'Fechar', cls: 'primary' }]
+    });
+  }
+
   function showSettings(state, handlers) {
     E.ensureRoutine(state);
     var speed = Number(state.settings.speed) || 3;
@@ -1512,6 +1529,7 @@
     showTutorial: showTutorial,
     showMoment: showMoment,
     drawMomentCanvas: drawMomentCanvas,
+    showHelp: showHelp,
     showExport: showExport,
     showImport: showImport,
     showReset: showReset,
