@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#7c5cff">
+  <meta name="description" content="TamaVida — cuide do seu bichinho virtual. Alimente, brinque, treine, evolua e colecione conquistas. Funciona offline.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TamaVida">
+  <link rel="manifest" href="manifest.json?v=35">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css?v=35">
+  <title>TamaVida — Seu Tamagotchi</title>
+</head>
+<body data-theme="night">
+  <div class="app-shell">
+    <header class="topbar" id="topbar">
+      <div class="brand">
+        <div class="brand-egg" aria-hidden="true"><span></span></div>
+        <div class="brand-text"><strong>Tama</strong><span>Vida</span></div>
+      </div>
+
+      <div class="topbar-center">
+        <span class="day-pill" id="dayPill">🌙 Noite</span>
+        <span class="speed-pill" id="speedPill">⏩ x3</span>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="coin-chip" title="Moedas"><span>🪙</span><b id="coinCount">0</b></div>
+        <button class="icon-btn" id="soundBtn" type="button" title="Som" aria-label="Ativar ou desativar som">🔊</button>
+        <button class="icon-btn" id="settingsBtn" type="button" title="Configurações" aria-label="Configurações">⚙️</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="col col-left" id="sectionPet" aria-label="Bichinho">
+        <div class="card pet-picker-card">
+          <div class="card-header compact">
+            <h2>Meus bichinhos</h2>
+            <button class="mini-btn" data-action="open-adopt" type="button" title="Adotar outro bichinho">+ Adotar</button>
+          </div>
+          <div class="pet-picker" id="petPicker"></div>
+        </div>
+
+        <div class="device-wrap">
+          <div class="device" id="device">
+            <div class="device-header">
+              <div>
+                <div class="device-name" id="petName">Bichinho</div>
+                <div class="device-sub" id="petSubtitle">Ovo • Bebê</div>
+              </div>
+              <div class="device-status" id="petStatusPill">😄 Feliz</div>
+            </div>
+
+            <div class="screen" id="screen">
+              <div class="sky">
+                <div class="celestial" id="celestial">🌙</div>
+                <div class="star s1">✦</div><div class="star s2">✧</div>
+                <div class="star s3">✦</div><div class="star s4">✧</div>
+                <div class="cloud c1"></div><div class="cloud c2"></div>
+              </div>
+              <div class="room">
+                <div class="window"></div>
+                <div class="plant">🌿</div>
+                <div class="rug"></div>
+                <div class="toy-corner">🧸</div>
+              </div>
+              <div class="pet-stage" id="petStage">
+                <div class="speech" id="speech">Olá!</div>
+                <div id="spriteMount"></div>
+              </div>
+              <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+              <div class="event-scene" id="eventScene" aria-hidden="true"></div>
+              <div class="weather-layer" id="weatherLayer" aria-hidden="true"></div>
+              <div class="sleep-zzz" id="sleepZzz" aria-hidden="true">z Z z</div>
+              <div class="screen-vignette"></div>
+            </div>
+
+            <div class="device-footer">
+              <span class="device-brand">TAMA<strong>VIDA</strong></span>
+              <span class="device-clock" id="deviceClock">00:00</span>
+              <span class="device-battery" id="batteryIcon">🔋</span>
+            </div>
+            <div class="device-buttons" aria-hidden="true">
+              <i></i><i></i><i></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="card care-alerts" id="careAlerts"></div>
+      </section>
+
+      <section class="col col-center" id="sectionCare" aria-label="Status e cuidados">
+        <div class="card stats-card">
+          <div class="card-header">
+            <div>
+              <h2>Status de <span id="statsName">seu bichinho</span></h2>
+              <p class="muted" id="moodLine">Humor: —</p>
+            </div>
+            <div class="level-badge" id="levelBadge">Nv. 1</div>
+          </div>
+          <div class="stats-grid" id="statsGrid"></div>
+          <div class="meta-grid">
+            <div><span>🎂 Idade</span><b id="ageValue">0 min</b></div>
+            <div><span>⚖️ Peso</span><b id="weightValue">30 g</b></div>
+            <div><span>💜 Carinho</span><b id="affectionValue">0</b></div>
+            <div><span>🎓 Disciplina</span><b id="disciplineValue">10</b></div>
+          </div>
+          <div class="xp-wrap">
+            <div class="xp-label"><span>Experiência</span><span id="xpLabel">0 / 20 XP</span></div>
+            <div class="bar xp-bar"><i id="xpBar"></i></div>
+          </div>
+          <button class="mini-btn path-btn" id="pathBtn" type="button" data-action="choose-path" hidden>🌟 Escolher caminho</button>
+        </div>
+
+        <div class="card actions-card">
+          <div class="card-header">
+            <div><h2>Cuidados</h2><p class="muted">Cuide bem para evoluir!</p></div>
+          </div>
+          <div class="actions-grid" id="actionsGrid"></div>
+        </div>
+
+        <div class="card tabs-card" id="tabsCard">
+          <div class="tabs" role="tablist" aria-label="Painéis">
+            <button class="tab active" data-tab="inventory" role="tab" type="button">🎒 Inventário</button>
+            <button class="tab" data-tab="shop" role="tab" type="button">🛒 Loja</button>
+            <button class="tab" data-tab="adventure" role="tab" type="button">🧭 Aventura</button>
+            <button class="tab" data-tab="garden" role="tab" type="button">🌱 Horta</button>
+            <button class="tab" data-tab="craft" role="tab" type="button">🛠️ Oficina</button>
+            <button class="tab" data-tab="kitchen" role="tab" type="button">🍳 Cozinha</button>
+            <button class="tab" data-tab="trades" role="tab" type="button">🔄 Trocas</button>
+            <button class="tab" data-tab="stickers" role="tab" type="button">📔 Álbum</button>
+            <button class="tab" data-tab="moments" role="tab" type="button">📸 Momentos</button>
+            <button class="tab" data-tab="achievements" role="tab" type="button">🏆 Conquistas</button>
+            <button class="tab" data-tab="ranking" role="tab" type="button">🏅 Ranking</button>
+            <button class="tab" data-tab="diary" role="tab" type="button">📖 Diário</button>
+            <button class="tab" data-tab="chart" role="tab" type="button">📈 Gráfico</button>
+          </div>
+          <div class="tab-panel" id="tabPanel"></div>
+        </div>
+      </section>
+
+      <section class="col col-right" id="sectionWorld" aria-label="Mundo">
+        <div class="card games-card">
+          <div class="card-header"><div><h2>Minigames</h2><p class="muted">Diversão e moedas</p></div><span class="trophy">🏅</span></div>
+          <div class="games-list" id="gamesList"></div>
+        </div>
+
+        <div class="card daily-card" id="dailyCard"></div>
+
+        <div class="card weekly-card" id="weeklyCard"></div>
+
+        <div class="card focus-card" id="focusCard"></div>
+
+        <div class="card goals-card">
+          <div class="card-header"><div><h2>Próximo passo</h2><p class="muted">Objetivos do seu bichinho</p></div></div>
+          <div id="goalsList"></div>
+        </div>
+
+        <div class="card collection-card">
+          <div class="card-header"><div><h2>Coleção</h2><p class="muted">Espécies adotadas</p></div><span id="collectionCount" class="muted">0/6</span></div>
+          <div class="collection-grid" id="collectionGrid"></div>
+        </div>
+
+        <div class="card tip-card" id="tipCard"></div>
+
+        <div class="card data-card">
+          <div class="card-header"><div><h2>Seu progresso</h2><p class="muted">Salvo neste dispositivo</p></div></div>
+          <div class="data-actions">
+            <button class="ghost-btn" data-action="share-card" type="button">📇 Cartão</button>
+            <button class="ghost-btn" data-action="export-save" type="button">📤 Exportar</button>
+            <button class="ghost-btn" data-action="import-save" type="button">📥 Importar</button>
+            <button class="ghost-btn danger" data-action="reset-game" type="button">🗑️ Recomeçar</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="mobile-nav" aria-label="Navegação">
+      <button type="button" data-scroll="sectionPet" class="active">🥚<span>Pet</span></button>
+      <button type="button" data-scroll="sectionCare">💊<span>Cuidados</span></button>
+      <button type="button" data-scroll="sectionWorld">🎮<span>Mundo</span></button>
+      <button type="button" data-action="open-adopt">➕<span>Adotar</span></button>
+    </nav>
+  </div>
+
+  <div id="modalRoot"></div>
+  <div id="gameRoot"></div>
+  <div id="toastRoot" aria-live="polite"></div>
+  <div id="soundCueRoot" aria-live="polite"></div>
+  <div id="onboardingRoot"></div>
+
+  <script src="js/data.js?v=35"></script>
+  <script src="js/audio.js?v=35"></script>
+  <script src="js/engine.js?v=35"></script>
+  <script src="js/games.js?v=35"></script>
+  <script src="js/ui.js?v=35"></script>
+  <script src="js/app.js?v=35"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "tamavida",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tamagotchi completo em PWA com evolução, aniversário, foco, figurinhas, ofertas, passeios, batalhas RPG, diário ilustrado, missões, streak, oficina, acessibilidade e funcionamento offline.",
+  "scripts": {
+    "test": "node tests/engine.test.js",
+    "start": "python3 -m http.server 8080"
+  }
+}
