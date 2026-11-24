@@ -7,7 +7,6 @@ Tamagotchi completo em PWA (HTML, CSS e JavaScript puro), com cuidados em tempo 
 Basta abrir `index.html` no navegador. Para instalar como aplicativo (PWA) e ativar o modo offline, sirva via HTTP:
 
 ```bash
-cd /home/cleberleonheart/tamagotchi
 python3 -m http.server 8080
 ```
 
