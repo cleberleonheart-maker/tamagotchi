@@ -306,7 +306,7 @@
 
   function haptic(pattern) {
     try {
-      if (navigator.vibrate && state && state.settings && state.settings.vibration !== false) navigator.vibrate(pattern || 12);
+      if (navigator.vibrate && state && state.settings && state.settings.vibration !== false && !state.settings.reduceMotion) navigator.vibrate(pattern || 12);
     } catch (e) { /* noop */ }
   }
 
@@ -651,7 +651,7 @@
       return { ok: true };
     }
 
-    if (action === 'export-save') { UI.showExport(state); return { ok: true }; }
+    if (action === 'export-save') { UI.showExport(state); persist(); return { ok: true }; }
     if (action === 'export-csv') { exportCsv(); return { ok: true }; }
 
     if (action === 'import-save') {
@@ -667,6 +667,26 @@
         scheduleReminders();
         UI.toast('Progresso importado com sucesso!', 'good');
       });
+      return { ok: true };
+    }
+
+    if (action === 'check-update') {
+      if (!('serviceWorker' in navigator) || !navigator.serviceWorker.getRegistration) {
+        UI.toast('Atualização disponível só no modo app/navegador compatível.', 'info');
+        return { ok: true };
+      }
+      navigator.serviceWorker.getRegistration().then(function (registration) {
+        if (!registration) { UI.toast('Service worker não registrado.', 'bad'); return; }
+        return registration.update().then(function () {
+          if (registration.waiting) {
+            UI.showConfirm('⬆️ Atualização disponível', 'Uma nova versão do TamaVida está pronta.', '<p>Recarregue para usar as melhorias mais recentes.</p>', function () {
+              registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }, 'Atualizar agora');
+          } else {
+            UI.toast('Você já está na versão mais recente.', 'info');
+          }
+        });
+      }).catch(function () { UI.toast('Não foi possível verificar atualização agora.', 'bad'); });
       return { ok: true };
     }
 

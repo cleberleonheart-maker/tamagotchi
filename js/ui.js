@@ -960,6 +960,14 @@
       '<button class="ghost-btn tip-tutorial" type="button" data-action="open-tutorial">❓ Rever tutorial</button>';
   }
 
+  function renderBackupHint(state) {
+    var hint = document.getElementById('backupHint');
+    if (!hint) return;
+    if (!state.lastExportAt) { hint.textContent = 'Dica: exporte um backup para proteger seu progresso.'; return; }
+    var days = Math.floor((Date.now() - state.lastExportAt) / 86400000);
+    hint.textContent = days >= 7 ? '⚠️ Último backup há ' + days + ' dias. Exporte novamente.' : 'Último backup: ' + new Date(state.lastExportAt).toLocaleDateString('pt-BR') + '.';
+  }
+
   function renderTopbar(state) {
     $('#coinCount').textContent = state.coins;
     $('#speedPill').textContent = '⏩ x' + state.settings.speed + ' (' + (DATA.SPEED_LABELS[state.settings.speed] || '') + ')';
@@ -1028,6 +1036,7 @@
     $('#screen').classList.toggle('is-sleeping', !!pet.sleeping);
     $('#screen').classList.toggle('is-critical', pet.status === 'critical');
     renderTopbar(state);
+    renderBackupHint(state);
     updateFocus(state);
   }
 
@@ -1245,6 +1254,7 @@
       { key: 'music', icon: '🎵', title: 'Música ambiente', sub: 'Melodia suave em segundo plano' },
       { key: 'ambientSound', icon: '🌦️', title: 'Sons do clima', sub: 'Chuva, neve e noite em segundo plano' },
       { key: 'notifications', icon: '🔔', title: 'Notificações', sub: 'Avisos quando precisar de cuidados' },
+      { key: 'vibration', icon: '📳', title: 'Vibração', sub: 'Feedback tátil em ações (quando suportado)' },
       { key: 'reduceMotion', icon: '🎞️', title: 'Reduzir movimento', sub: 'Desliga animações e transições' },
       { key: 'visualCues', icon: '👁️', title: 'Avisos visuais de som', sub: 'Mostra um sinal quando há efeito sonoro' }
     ];
@@ -1401,14 +1411,29 @@
     var code = E.exportSave(state);
     openModal({
       title: '📤 Exportar progresso',
-      sub: 'Copie o código abaixo e guarde em local seguro. Você pode importá-lo em outro dispositivo.',
-      body: '<div class="field"><label for="saveCode">Código do progresso</label><textarea id="saveCode" readonly>' + esc(code) + '</textarea></div>',
+      sub: 'Copie o código ou baixe o arquivo. Guarde em local seguro para importar em outro dispositivo.',
+      body: '<div class="field"><label for="saveCode">Código do progresso</label><textarea id="saveCode" readonly>' + esc(code) + '</textarea></div>' +
+        '<p class="muted">Último backup: ' + (state.lastExportAt ? new Date(state.lastExportAt).toLocaleString('pt-BR') : 'nunca') + '</p>',
       actions: [
         { label: 'Fechar', cls: 'ghost' },
+        { label: '⬇️ Baixar', cls: 'ghost', onClick: function () {
+          try {
+            var blob = new Blob([code], { type: 'text/plain;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            var stamp = new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-');
+            a.href = url; a.download = 'tamavida-backup-' + stamp + '.txt';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+            state.lastExportAt = Date.now();
+            toast('Backup baixado!', 'good');
+          } catch (error) { toast('Não foi possível baixar o backup.', 'bad'); }
+          return false;
+        } },
         { label: '📋 Copiar', cls: 'primary', onClick: function (modal) {
           var area = $('#saveCode', modal);
           area.select();
-          try { document.execCommand('copy'); toast('Código copiado!', 'good'); }
+          try { document.execCommand('copy'); state.lastExportAt = Date.now(); toast('Código copiado!', 'good'); }
           catch (error) { toast('Selecione e copie manualmente.', 'bad'); }
           return false;
         } }

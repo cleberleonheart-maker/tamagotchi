@@ -538,8 +538,9 @@
       updatedAt: now(),
       settings: {
         sound: true, music: false, ambientSound: true, notifications: false, reminderMorning: '08:00', reminderEvening: '20:00',
-        speed: 3, theme: 'auto', contrast: 'normal', fontSize: 'normal', reduceMotion: false, visualCues: true
+        speed: 3, theme: 'auto', contrast: 'normal', fontSize: 'normal', reduceMotion: false, visualCues: true, vibration: true
       },
+      lastExportAt: 0,
       coins: 150,
       inventory: { apple: 3, soap: 1 },
       totals: {
@@ -664,8 +665,10 @@
       contrast: ['normal', 'high'].indexOf(settings.contrast) !== -1 ? settings.contrast : 'normal',
       fontSize: ['normal', 'large'].indexOf(settings.fontSize) !== -1 ? settings.fontSize : 'normal',
       reduceMotion: settings.reduceMotion === true,
-      visualCues: settings.visualCues !== false
+      visualCues: settings.visualCues !== false,
+      vibration: settings.vibration !== false
     };
+    state.lastExportAt = num(raw.lastExportAt, 0, 0, Date.now() + 86400000);
     state.createdAt = num(raw.createdAt, now(), 0, Date.now() + 86400000);
     state.updatedAt = num(raw.updatedAt, now(), 0, Date.now() + 86400000);
     state.coins = Math.floor(num(raw.coins, 150, 0, 1000000000));
