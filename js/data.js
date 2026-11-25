@@ -153,7 +153,7 @@
     { id: 'bookshelf', name: 'Estante de livros', emoji: '📚', type: 'decor', decor: 'library', price: 220, xp: 12, desc: 'Histórias e conforto em cada prateleira.' },
     { id: 'melon', name: 'Melão doce', emoji: '🍈', type: 'food', price: 88, hunger: 30, happiness: 10, weight: 3, xp: 11, desc: 'Doce e suculento. Acalma a fome sem pesar.' },
     { id: 'icecream', name: 'Sorvete', emoji: '🍦', type: 'food', price: 105, hunger: 18, happiness: 26, energy: 6, weight: 3, xp: 12, desc: 'Um refresco cremoso que alegra qualquer dia.' },
-    { id: 'sorbet', name: 'Sorbete refrescante', emoji: '🍧', type: 'food', price: 150, hunger: 22, happiness: 30, health: 3, weight: 4, xp: 16, desc: 'Feito na cozinha. Fome e humor ficam mais lentos.' },
+    { id: 'sorbet', name: 'Sorbete refrescante', emoji: '🍧', type: 'food', price: 150, hunger: 22, happiness: 30, health: 3, weight: 4, xp: 16, buff: 'sorbet', buffMinutes: 25, desc: 'Feito na cozinha. Fome e humor ficam mais lentos.' },
     { id: 'towel', name: 'Toalha quente', emoji: '🧺', type: 'care', price: 36, hygiene: 34, happiness: 6, xp: 7, desc: 'Seca e aqueca depois do banho.' },
     { id: 'yoyo', name: 'Ioiô colorido', emoji: '🪀', type: 'toy', price: 65, happiness: 28, discipline: 8, xp: 10, desc: 'Brincadeira simples que exercita a paciência.' },
     { id: 'bow', name: 'Laço de festa', emoji: '🎀', type: 'accessory', price: 170, bonus: { happiness: 0.12, hygiene: 0.06 }, desc: 'Charme extra com menos tristeza e sujeira.' },
@@ -337,7 +337,7 @@
     { id: 'rich', name: 'Coin stack', emoji: '💰', desc: 'Tenha 1000 moedas de uma vez.' },
     { id: 'perfect', name: 'Cuidado perfeito', emoji: '💯', desc: 'Deixe todos os stats acima de 90.' },
     { id: 'revive', name: 'Segunda chance', emoji: '✨', desc: 'Reanime um bichinho crítico.' },
-    { id: 'collector', name: 'Colecionador', emoji: '🐾', desc: 'Adote todas as 6 espécies.' },
+    { id: 'collector', name: 'Colecionador', emoji: '🐾', desc: 'Adote todas as espécies.' },
     { id: 'accessory', name: 'Estiloso', emoji: '😎', desc: 'Equipe um acessório.' },
     { id: 'sleep', name: 'Boa noite', emoji: '🌙', desc: 'Deixe seu bichinho dormir.' },
     { id: 'discipline_100', name: 'Muito obediente', emoji: '🎖️', desc: 'Chegue a 100 de disciplina.' },
@@ -480,11 +480,21 @@
 
   var CHANGES = [
     {
+      version: 'v41',
+      title: 'Correções de robustez',
+      items: [
+        'Sorbete agora ativa o buff de fome e humor corretamente.',
+        'Decorações voltam para a bolsa ao trocar ou remover e sobrevivem ao save.',
+        'Botão ⬆️ do topo aplica a atualização pendente; busca da loja mantém o termo e aceita sem acentos.',
+        'Atalhos e modais não interceptam mais a digitação; avisos usam o nome do pet correto.'
+      ]
+    },
+    {
       version: 'v40',
       title: 'Mais amigos e descobertas',
       items: [
         'Duas espécies novas: tartaruga e raposinha.',
-        'Sete itens novos, dois pratos, receitas, troca, passeio e batalha inéditos.',
+        'Sete itens novos, um prato, duas receitas, troca, passeio e batalha inéditos.',
         'Busca na loja, painel de novidades e aviso ao concluir uma atualização.'
       ]
     },
@@ -508,7 +518,7 @@
   ];
 
   global.TamaData = {
-    VERSION: 'v40',
+    VERSION: 'v41',
     CHANGES: CHANGES,
     STAGES: STAGES,
     SPECIES: SPECIES,

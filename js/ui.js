@@ -4,6 +4,7 @@
   var DATA = global.TamaData;
   var E = global.TamaEngine;
   var activeTab = 'inventory';
+  var shopSearchTerm = '';
   var selectedSpecies = DATA.SPECIES[0].id;
   var modalRoot, toastRoot, gameRoot, soundCueRoot;
   var lastCueAt = 0;
@@ -37,6 +38,15 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
   function pct(value) { return Math.max(0, Math.min(100, Math.round(value))); }
+  function normalizeText(value) {
+    return String(value || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+  function applyShopFilter(panel, term) {
+    var needle = normalizeText(term).trim();
+    $$('.item-card', panel).forEach(function (card) {
+      card.hidden = !!needle && normalizeText(card.textContent).indexOf(needle) < 0;
+    });
+  }
 
   function fmtAge(minutes) {
     var total = Math.floor(minutes || 0);
@@ -412,7 +422,7 @@
         '<option value="1">1</option><option value="5">5</option><option value="10">10</option>' +
       '</select>' +
       '<span class="muted">Saldo: <b style="color:var(--yellow)">🪙 ' + state.coins + '</b></span>' +
-      '<input id="shopSearch" class="shop-search" type="search" placeholder="🔎 Buscar item..." aria-label="Buscar item na loja">' +
+      '<input id="shopSearch" class="shop-search" type="search" value="' + esc(shopSearchTerm) + '" placeholder="🔎 Buscar item..." aria-label="Buscar item na loja">' +
       '</div>' +
       '<div class="item-grid">' + DATA.ITEMS.map(function (item) { return itemCard(item, state, pet, 'shop'); }).join('') + '</div>';
   }
@@ -778,11 +788,10 @@
       panel.innerHTML = shopMarkup(state, pet);
       var shopSearch = $('#shopSearch', panel);
       if (shopSearch) {
+        applyShopFilter(panel, shopSearchTerm);
         shopSearch.addEventListener('input', function () {
-          var term = shopSearch.value.trim().toLowerCase();
-          $$('.item-card', panel).forEach(function (card) {
-            card.hidden = !!term && card.textContent.toLowerCase().indexOf(term) < 0;
-          });
+          shopSearchTerm = shopSearch.value;
+          applyShopFilter(panel, shopSearchTerm);
         });
       }
     }
@@ -1116,6 +1125,7 @@
     if (modalRoot._trap) document.removeEventListener('keydown', modalRoot._trap);
     modalRoot._restoreFocus = document.activeElement;
     config = config || {};
+    modalRoot._locked = !!config.locked;
     modalRoot.innerHTML = '<div class="overlay"><div class="modal" role="dialog" aria-modal="true">' +
       '<h2>' + (config.title || '') + '</h2>' +
       (config.sub ? '<p class="modal-sub">' + config.sub + '</p>' : '') +
@@ -1160,9 +1170,14 @@
       modalRoot._trap = null;
     }
     modalRoot.innerHTML = '';
+    modalRoot._locked = false;
     var restore = modalRoot._restoreFocus;
     if (restore && document.contains(restore) && restore.focus) restore.focus();
     modalRoot._restoreFocus = null;
+  }
+
+  function isModalLocked() {
+    return !!(modalRoot && modalRoot._locked);
   }
 
   function showAdoption(state, onAdopt) {
@@ -1254,7 +1269,7 @@
         '</div>' +
         '<p class="muted" style="margin-top:12px">Dica: use 📲 para instalar o app e jogar offline. Quando houver nova versão, use a faixa ⬆️ no topo para atualizar. Versão atual: <b>' + DATA.VERSION + '</b>.</p>',
       actions: [
-        { label: '📜 Novidades', cls: 'ghost', onClick: function () { showChangelog(); return false; } },
+        { label: '📜 Novidades', cls: 'ghost', onClick: function () { showChangelog(); return true; } },
         { label: 'Fechar', cls: 'primary' }
       ]
     });
@@ -1581,6 +1596,7 @@
     showSoundCue: showSoundCue,
     openModal: openModal,
     closeModal: closeModal,
+    isModalLocked: isModalLocked,
     showAdoption: showAdoption,
     showSettings: showSettings,
     showConfirm: showConfirm,

@@ -911,18 +911,19 @@
 
   function handleKeyboard(event) {
     var tag = (event.target && event.target.tagName || '').toLowerCase();
+    var editable = ['input', 'textarea', 'select'].indexOf(tag) !== -1 || !!(event.target && event.target.isContentEditable);
+    var overlay = document.querySelector('.game-overlay') || document.querySelector('.overlay');
     if (event.key === 'Escape') {
-      if (!state.pets.length) return;
       if (Games.isRunning()) Games.close();
-      else UI.closeModal();
+      else if (!(overlay && UI.isModalLocked())) UI.closeModal();
       return;
     }
+    if (editable || overlay) return;
     if (event.key === '?' && !event.ctrlKey && !event.metaKey && !event.altKey) {
       event.preventDefault();
       perform('help');
       return;
     }
-    if (document.querySelector('.game-overlay') || document.querySelector('.overlay')) return;
     if (event.target && event.target.classList && event.target.classList.contains('tab') && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
       event.preventDefault();
       var tabs = $$('.tab');
@@ -983,18 +984,18 @@
     if (events.sick) {
       A.play('alert');
       UI.playFx('🤒', 4);
-      UI.toast('🤒 ' + E.activePet(state).name + ' ficou doente. Use um remédio!', 'bad');
+      UI.toast('🤒 ' + (events.sickName || E.activePet(state).name) + ' ficou doente. Use um remédio!', 'bad');
       refresh();
     }
     if (events.evolved) {
       A.play('evolve');
       UI.playFx('✨', 8);
-      UI.toast('🐣 ' + E.activePet(state).name + ' evoluiu para ' + events.stageUp.name + '!', 'good');
+      UI.toast('🐣 ' + (events.evolvedName || E.activePet(state).name) + ' evoluiu para ' + events.stageUp.name + '!', 'good');
       refresh();
     }
     if (events.died) {
       A.play('alert');
-      UI.toast('🚨 Seu bichinho está em estado crítico!', 'bad');
+      UI.toast('🚨 ' + (events.criticalName || 'Seu bichinho') + ' está em estado crítico!', 'bad');
       refresh();
     }
     UI.updateLive(state);
@@ -1071,7 +1072,11 @@
     });
     document.getElementById('settingsBtn').addEventListener('click', function () { perform('settings'); });
     var updateBtn = document.getElementById('updateBtn');
-    if (updateBtn) updateBtn.addEventListener('click', function () { A.play('click'); manualUpdateCheck(null); });
+    if (updateBtn) updateBtn.addEventListener('click', function () {
+      A.play('click');
+      if (pendingUpdateWorker) applyUpdate();
+      else manualUpdateCheck(null);
+    });
     var updateApplyBtn = document.getElementById('updateApplyBtn');
     if (updateApplyBtn) updateApplyBtn.addEventListener('click', applyUpdate);
     var updateLaterBtn = document.getElementById('updateLaterBtn');

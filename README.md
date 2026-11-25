@@ -96,7 +96,7 @@ npm test
 node tests/engine.test.js
 ```
 
-Suíte atual: 72 testes cobrindo tempo, evolução, economia, itens, troca de acessórios, elixir protegido, missões diárias/semanais e climáticas, check-in diário, calendário de cuidados, lembretes, foco com tarefa, personalidade, caminhos adultos, visitantes, streak, oficina, cozinha, buffs, mercado de trocas, pesca, estatísticas, acessibilidade, aniversário, figurinhas, ofertas, momentos, passeios, batalhas, doenças, decoração, slots, sanitização, eventos climáticos, acessórios de frio, efeitos do clima em aventuras, tema dia/noite automático, horta, rotina, ranking semanal e conteúdo novo (espécies, itens e receitas).
+Suíte atual: 78 testes cobrindo tempo, evolução, economia, itens, troca de acessórios e decorações, elixir protegido, missões diárias/semanais e climáticas, check-in diário, calendário de cuidados, lembretes, foco com tarefa, personalidade, caminhos adultos, visitantes, streak, oficina, cozinha, buffs, mercado de trocas, pesca, estatísticas, acessibilidade, aniversário, figurinhas, ofertas, momentos, passeios, batalhas, doenças, slots, sanitização, eventos climáticos, acessórios de frio, efeitos do clima em aventuras, tema dia/noite automático, horta, rotina, ranking semanal e correções de robustez.
 
 ## Salvamento
 

@@ -1,15 +1,15 @@
-const CACHE_NAME = 'tamavida-v40';
+const CACHE_NAME = 'tamavida-v41';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=40',
-  './js/data.js?v=40',
-  './js/audio.js?v=40',
-  './js/engine.js?v=40',
-  './js/games.js?v=40',
-  './js/ui.js?v=40',
-  './js/app.js?v=40',
-  './manifest.json?v=40',
+  './styles.css?v=41',
+  './js/data.js?v=41',
+  './js/audio.js?v=41',
+  './js/engine.js?v=41',
+  './js/games.js?v=41',
+  './js/ui.js?v=41',
+  './js/app.js?v=41',
+  './manifest.json?v=41',
   './icons/icon-180.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -60,8 +60,10 @@ self.addEventListener('fetch', (event) => {
       fetch(request)
         .then((response) => {
           const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put('./index.html', copy));
-          return response;
+          return caches.open(CACHE_NAME)
+            .then((cache) => cache.put('./index.html', copy))
+            .then(() => response)
+            .catch(() => response);
         })
         .catch(() => caches.match('./index.html'))
     );
@@ -71,11 +73,12 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(request).then((cached) => {
       const fresh = fetch(request).then((response) => {
-        if (response.ok) {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-        }
-        return response;
+        if (!response.ok) return response;
+        const copy = response.clone();
+        return caches.open(CACHE_NAME)
+          .then((cache) => cache.put(request, copy))
+          .then(() => response)
+          .catch(() => response);
       }).catch(() => cached);
       return cached || fresh;
     })

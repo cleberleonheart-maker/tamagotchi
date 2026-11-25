@@ -19,6 +19,11 @@
     return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
   }
 
+  function decorItemFor(key) {
+    if (!key) return null;
+    return DATA.ITEMS.find(function (item) { return item.type === 'decor' && item.decor === key; }) || null;
+  }
+
   function ensureDaily(state, timestamp) {
     var key = dateKey(new Date(timestamp || now()));
     if (!state.daily || state.daily.date !== key) {
@@ -288,7 +293,9 @@
   function buffFactor(state, key, timestamp) {
     var time = timestamp || now();
     var buffs = state.buffs || {};
-    if (key === 'hunger' && buffs.soup > time) return 0.75;
+    if (key === 'hunger' && buffs.soup > time && buffs.sorbet > time) return 0.5625;
+    if (key === 'hunger' && (buffs.soup > time || buffs.sorbet > time)) return 0.75;
+    if (key === 'happiness' && buffs.sorbet > time) return 0.75;
     if (key === 'energy' && buffs.juice > time) return 0.75;
     return 1;
   }
@@ -634,7 +641,7 @@
       status: status,
       sleeping: !!raw.sleeping,
       accessory: accessory && accessory.type === 'accessory' ? accessory.id : null,
-      criticalAt: raw.criticalAt ? num(raw.criticalAt, null, 0, Date.now() + 86400000) : null,
+      criticalAt: status === 'critical' ? num(raw.criticalAt, now(), 0, Date.now() + 86400000) : null,
       lastBirthday: Math.floor(num(raw.lastBirthday, 0, 0, 100000)),
       lastActionAt: num(raw.lastActionAt, 0, 0, Date.now() + 86400000),
       lastTrainAt: num(raw.lastTrainAt, 0, 0, Date.now() + 86400000),
@@ -691,8 +698,8 @@
         state.achievements[id] = num(raw.achievements[id], now(), 0, Date.now() + 86400000);
       }
     });
-    var decor = DATA.item(raw.activeDecor);
-    state.activeDecor = decor && decor.type === 'decor' ? decor.decor : null;
+    var decor = decorItemFor(raw.activeDecor) || DATA.item(raw.activeDecor);
+    state.activeDecor = decor && decor.type === 'decor' ? (decor.decor || decor.id) : null;
     state.pets = pets;
     state.activePetId = pets.some(function (pet) { return pet.id === raw.activePetId; }) ? raw.activePetId : pets[0].id;
 
@@ -814,7 +821,7 @@
     state.stickers = {};
     Object.keys(raw.stickers || {}).forEach(function (key) {
       if (DATA.STICKERS.some(function (sticker) { return sticker.id === key; })) {
-        state.stickers[key] = num(raw.stickers[key], 1, 1, 9999);
+        state.stickers[key] = Math.floor(num(raw.stickers[key], 1, 1, 9999));
       }
     });
     state.pets.forEach(function (pet) {
@@ -1161,7 +1168,7 @@
     var time = timestamp || now();
     var elapsed = Math.max(0, time - (state.updatedAt || time));
     var events = {
-      evolved: false, stageUp: null, died: false, sick: false,
+      evolved: false, stageUp: null, evolvedName: null, died: false, criticalName: null, sick: false, sickName: null,
       streak: null, birthday: [], sticker: null, focus: null, visitor: null
     };
     if (!timestamp) events.visitor = checkVisitors(state, time);
@@ -1257,6 +1264,7 @@
           pet.message = 'Ai, estou doente! 🤒';
           addLog(state, pet.name + ' ficou doente: ' + pet.illness.type + '. Use um remédio!', 'bad');
           events.sick = true;
+          events.sickName = pet.name;
         }
       }
 
@@ -1267,6 +1275,7 @@
         pet.message = 'Está muito fraco... precisa de um Elixir da vida!';
         addLog(state, pet.name + ' entrou em estado crítico! Use um elixir para reanimar.', 'bad');
         events.died = true;
+        events.criticalName = pet.name;
       }
 
       var next = pet.stageIndex < DATA.STAGES.length - 1 ? DATA.stage(pet.stageIndex + 1) : null;
@@ -1274,6 +1283,7 @@
         pet.stageIndex += 1;
         events.sticker = unlockSticker(state, pet.speciesId, pet.stageIndex);
         events.evolved = true;
+        events.evolvedName = pet.name;
         events.stageUp = next;
         pet.message = 'Evoluiu para ' + next.name.toLowerCase() + '!';
         addLog(state, pet.name + ' evoluiu para ' + next.name + '!', 'good');
@@ -1373,8 +1383,13 @@
         result.msg = pet.name + ' equipou ' + item.name + ' ' + item.emoji;
       }
     } else if (item.type === 'decor') {
+      var previousDecor = decorItemFor(state.activeDecor);
       state.activeDecor = item.decor;
       result.msg = 'Quarto decorado com ' + item.name + ' ' + item.emoji;
+      if (previousDecor && previousDecor.id !== itemId) {
+        state.inventory[previousDecor.id] = (state.inventory[previousDecor.id] || 0) + 1;
+        result.msg += ' ' + previousDecor.name + ' voltou para a bolsa.';
+      }
     } else {
       var event = DATA.eventForDay(new Date());
       var foodBonus = item.type === 'food' ? ((event.effect && event.effect.food) || 1) : 1;
@@ -1604,9 +1619,10 @@
 
   function removeDecor(state) {
     if (!state.activeDecor) return { ok: false, msg: 'Nenhuma decoração ativa.' };
-    var item = DATA.ITEMS.find(function (entry) { return entry.type === 'decor' && entry.decor === state.activeDecor; });
+    var item = decorItemFor(state.activeDecor);
     state.activeDecor = null;
-    return { ok: true, msg: item ? item.name + ' guardada.' : 'Decoração removida.' };
+    if (item) state.inventory[item.id] = (state.inventory[item.id] || 0) + 1;
+    return { ok: true, msg: item ? item.name + ' guardada no inventário.' : 'Decoração removida.' };
   }
 
   function ensureAdventure(state) {

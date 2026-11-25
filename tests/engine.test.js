@@ -302,7 +302,7 @@ test('doença aparece com risco acumulado e é curada por bandagem', () => {
   assert.equal(pet.illness, null);
 });
 
-test('decoração é aplicada ao quarto e removida', () => {
+test('decoração é aplicada, removida e devolvida ao inventário', () => {
   const state = fresh();
   state.coins = 500;
   assert.equal(E.buy(state, 'rug').ok, true);
@@ -310,6 +310,21 @@ test('decoração é aplicada ao quarto e removida', () => {
   assert.equal(state.activeDecor, 'cozy');
   assert.equal(E.removeDecor(state).ok, true);
   assert.equal(state.activeDecor, null);
+  assert.equal(state.inventory.rug, 1);
+});
+
+test('decorações sobrevivem ao save e voltam ao trocar', () => {
+  const state = fresh();
+  state.coins = 1000;
+  assert.equal(E.buy(state, 'terrarium').ok, true);
+  assert.equal(E.useItem(state, 'terrarium').ok, true);
+  assert.equal(state.activeDecor, 'garden');
+  E.save(state);
+  assert.equal(E.load().activeDecor, 'garden');
+  assert.equal(E.buy(state, 'rug').ok, true);
+  assert.equal(E.useItem(state, 'rug').ok, true);
+  assert.equal(state.activeDecor, 'cozy');
+  assert.equal(state.inventory.terrarium, 1);
 });
 
 test('slots salvam, listam, carregam e apagam progresso separado', () => {
@@ -349,6 +364,18 @@ test('sanitização corrige saves corrompidos e rejeita lixo', () => {
   assert.equal(state.inventory.nope, undefined);
   assert.equal(E.sanitizeSave({ version: 2, pets: [] }), null);
   assert.equal(E.sanitizeSave(null), null);
+});
+
+test('save crítico sem criticalAt recebe timestamp válido', () => {
+  const state = E.sanitizeSave({
+    version: 1,
+    pets: [{ speciesId: 'draco', status: 'critical' }]
+  });
+  assert.ok(state.pets[0].criticalAt > 0);
+  assert.equal(E.sanitizeSave({
+    version: 1,
+    pets: [{ speciesId: 'draco', status: 'alive' }]
+  }).pets[0].criticalAt, null);
 });
 
 test('qualidade de cuidado recompensa mais quando todos os status estão altos', () => {
@@ -458,7 +485,7 @@ test('novas receitas e itens entram no inventário e podem ser usados', () => {
   assert.ok(D.RECIPES.some((recipe) => recipe.id === 'kiteRecipe'));
 });
 
-test('conteúdo e novidades da versão 40 estão disponíveis', () => {
+test('conteúdo das versões 40 e 41 está disponível', () => {
   assert.ok(D.RECIPES.some((recipe) => recipe.id === 'melonRecipe'));
   assert.ok(D.RECIPES.some((recipe) => recipe.id === 'bowRecipe'));
   assert.ok(D.DISHES.some((dish) => dish.id === 'sorbetDish'));
@@ -467,6 +494,21 @@ test('conteúdo e novidades da versão 40 estão disponíveis', () => {
   assert.ok(D.WALKS.some((walk) => walk.id === 'botanic'));
   assert.ok(D.ENEMIES.some((enemy) => enemy.id === 'raposinha'));
   assert.ok(D.CHANGES.some((change) => change.version === D.VERSION));
+});
+
+test('eventos do tick identificam o pet correto', () => {
+  const evolving = fresh();
+  evolving.pets[0].age = 2;
+  evolving.pets[0].care = 10;
+  const evolved = E.tick(evolving, Date.now() + 60000);
+  assert.equal(evolved.evolvedName, 'Teste');
+
+  const critical = fresh();
+  critical.pets[0].hunger = 0;
+  critical.pets[0].hygiene = 0;
+  critical.pets[0].health = 1;
+  const died = E.tick(critical, Date.now() + 60000);
+  assert.equal(died.criticalName, 'Teste');
 });
 
 test('configurações de acessibilidade e tutorial sobrevivem ao save', () => {
@@ -629,6 +671,16 @@ test('saves antigos recebem figurinhas das fases já alcançadas', () => {
   assert.ok(loaded.stickers[D.stickerKey(pet.speciesId, 1)]);
   assert.ok(loaded.stickers[D.stickerKey(pet.speciesId, 2)]);
   assert.equal(loaded.stickers[D.stickerKey(pet.speciesId, 3)], undefined);
+});
+
+test('figurinhas fracionadas são arredondadas ao carregar', () => {
+  const state = fresh();
+  E.save(state);
+  const raw = JSON.parse(global.localStorage.getItem(E.STORAGE_KEY));
+  const key = D.stickerKey(E.activePet(state).speciesId, 0);
+  raw.stickers[key] = 3.7;
+  global.localStorage.setItem(E.STORAGE_KEY, JSON.stringify(raw));
+  assert.equal(E.load().stickers[key], 3);
 });
 
 test('passeios rendem moedas, XP e sobrevivem ao save', () => {
@@ -1014,6 +1066,21 @@ test('cozinha cria pratos e comer ativa buff por tempo limitado', () => {
   assert.equal(E.buffFactor(state, 'hunger'), 0.75);
   assert.equal(E.buffFactor(state, 'energy'), 1);
   assert.ok(pet.care >= 0);
+});
+
+test('sorbete ativa buff de fome e humor', () => {
+  const state = fresh();
+  state.inventory.icecream = 1;
+  state.inventory.milk = 1;
+  state.inventory.apple = 1;
+  const cooked = E.cook(state, 'sorbetDish');
+  assert.equal(cooked.ok, true);
+  assert.equal(state.inventory.sorbet, 2);
+  const used = E.useItem(state, 'sorbet');
+  assert.equal(used.ok, true);
+  assert.ok(state.buffs.sorbet > Date.now());
+  assert.equal(E.buffFactor(state, 'hunger'), 0.75);
+  assert.equal(E.buffFactor(state, 'happiness'), 0.75);
 });
 
 test('chá amplifica XP e torta da sorte amplifica moedas de minigame', () => {
