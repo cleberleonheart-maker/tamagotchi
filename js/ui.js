@@ -1240,7 +1240,7 @@
         '<div class="help-row"><span><kbd>Esc</kbd></span><span>Fechar janela/minigame</span></div>' +
         '<div class="help-row"><span><kbd>←</kbd> <kbd>→</kbd></span><span>Navegar entre abas</span></div>' +
         '</div>' +
-        '<p class="muted" style="margin-top:12px">Dica: use 📲 para instalar o app e jogar offline. Feche e abra o app para aplicar atualizações.</p>',
+        '<p class="muted" style="margin-top:12px">Dica: use 📲 para instalar o app e jogar offline. Quando houver nova versão, use a faixa ⬆️ no topo para atualizar.</p>',
       actions: [{ label: 'Fechar', cls: 'primary' }]
     });
   }

@@ -1,15 +1,15 @@
-const CACHE_NAME = 'tamavida-v37';
+const CACHE_NAME = 'tamavida-v38';
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=37',
-  './js/data.js?v=37',
-  './js/audio.js?v=37',
-  './js/engine.js?v=37',
-  './js/games.js?v=37',
-  './js/ui.js?v=37',
-  './js/app.js?v=37',
-  './manifest.json?v=37',
+  './styles.css?v=38',
+  './js/data.js?v=38',
+  './js/audio.js?v=38',
+  './js/engine.js?v=38',
+  './js/games.js?v=38',
+  './js/ui.js?v=38',
+  './js/app.js?v=38',
+  './manifest.json?v=38',
   './icons/icon-180.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -20,7 +20,6 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
   );
 });
 

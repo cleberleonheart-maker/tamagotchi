@@ -126,6 +126,22 @@ h2 { font-size: 1.02rem; letter-spacing: .01em; }
 .icon-btn[hidden] { display: none !important; }
 .icon-btn:hover { transform: translateY(-2px); border-color: var(--border-strong); }
 
+.update-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  margin: -6px 0 16px;
+  border: 1px solid rgba(255, 205, 90, .45);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(255, 209, 102, .18), rgba(139, 107, 255, .16));
+  font-size: .82rem;
+  font-weight: 700;
+}
+.update-banner span { flex: 1; }
+.update-banner[hidden] { display: none !important; }
+
 /* ---------- Layout ---------- */
 .layout {
   display: grid;

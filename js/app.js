@@ -17,8 +17,60 @@
   var questCache = [];
   var weeklyCache = [];
   var installPrompt = null;
+  var pendingUpdateWorker = null;
+  var hadServiceWorkerController = false;
+  var refreshingAfterUpdate = false;
 
   function persist() { E.save(state); }
+
+  function showUpdateAvailable(worker) {
+    if (!worker || pendingUpdateWorker === worker) return;
+    pendingUpdateWorker = worker;
+    var banner = document.getElementById('updateBanner');
+    if (banner) banner.hidden = false;
+    UI.toast('Nova versão disponível. Toque em “Atualizar agora”.', 'good');
+  }
+
+  function hideUpdateAvailable() {
+    pendingUpdateWorker = null;
+    var banner = document.getElementById('updateBanner');
+    if (banner) banner.hidden = true;
+  }
+
+  function applyUpdate() {
+    var worker = pendingUpdateWorker;
+    if (!worker) return;
+    hideUpdateAvailable();
+    UI.closeModal();
+    worker.postMessage({ type: 'SKIP_WAITING' });
+  }
+
+  function manualUpdateCheck(button) {
+    if (!('serviceWorker' in navigator) || !navigator.serviceWorker.getRegistration) {
+      UI.toast('Atualização disponível só no modo app/navegador compatível.', 'info');
+      return;
+    }
+    if (button) { button.disabled = true; button.textContent = '⏳ Verificando...'; }
+    navigator.serviceWorker.getRegistration().then(function (registration) {
+      if (!registration) {
+        UI.toast('Service worker não registrado. Abra pelo servidor/app instalado.', 'bad');
+        return;
+      }
+      return registration.update().then(function () {
+        if (registration.waiting) {
+          showUpdateAvailable(registration.waiting);
+          return;
+        }
+        setTimeout(function () {
+          if (!pendingUpdateWorker) UI.toast('Você já está na versão mais recente.', 'info');
+        }, 1500);
+      });
+    }).catch(function () {
+      UI.toast('Não foi possível verificar atualização agora.', 'bad');
+    }).finally(function () {
+      if (button) { button.disabled = false; button.textContent = '⬆️ Verificar atualização'; }
+    });
+  }
 
   function statsOf(pet) {
     if (!pet) return {};
@@ -619,33 +671,7 @@
         },
         onSlotSave: saveToSlot,
         onSlotLoad: loadFromSlot,
-        onCheckUpdate: function (button) {
-          if (!('serviceWorker' in navigator)) {
-            UI.toast('Atualização disponível só no modo app/navegador compatível.', 'info');
-            return;
-          }
-          if (button) { button.disabled = true; button.textContent = '⏳ Verificando...'; }
-          navigator.serviceWorker.getRegistration().then(function (registration) {
-            if (!registration) {
-              UI.toast('Service worker não registrado. Abra pelo servidor/app instalado.', 'bad');
-              return;
-            }
-            return registration.update().then(function () {
-              if (registration.waiting) {
-                UI.toast('Atualização pronta. Confirme para aplicar.', 'good');
-                UI.showConfirm('⬆️ Atualização disponível', 'Uma nova versão do TamaVida está pronta.', '<p>Recarregue para usar as melhorias mais recentes.</p>', function () {
-                  registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                }, 'Atualizar agora');
-              } else {
-                UI.toast('Você já está na versão mais recente.', 'info');
-              }
-            });
-          }).catch(function () {
-            UI.toast('Não foi possível verificar atualização agora.', 'bad');
-          }).finally(function () {
-            if (button) { button.disabled = false; button.textContent = '⬆️ Verificar atualização'; }
-          });
-        }
+        onCheckUpdate: manualUpdateCheck
       });
       A.play('click');
       return { ok: true };
@@ -671,22 +697,7 @@
     }
 
     if (action === 'check-update') {
-      if (!('serviceWorker' in navigator) || !navigator.serviceWorker.getRegistration) {
-        UI.toast('Atualização disponível só no modo app/navegador compatível.', 'info');
-        return { ok: true };
-      }
-      navigator.serviceWorker.getRegistration().then(function (registration) {
-        if (!registration) { UI.toast('Service worker não registrado.', 'bad'); return; }
-        return registration.update().then(function () {
-          if (registration.waiting) {
-            UI.showConfirm('⬆️ Atualização disponível', 'Uma nova versão do TamaVida está pronta.', '<p>Recarregue para usar as melhorias mais recentes.</p>', function () {
-              registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-            }, 'Atualizar agora');
-          } else {
-            UI.toast('Você já está na versão mais recente.', 'info');
-          }
-        });
-      }).catch(function () { UI.toast('Não foi possível verificar atualização agora.', 'bad'); });
+      manualUpdateCheck(null);
       return { ok: true };
     }
 
@@ -1035,6 +1046,10 @@
       UI.toast(state.settings.sound ? 'Som ativado 🔊' : 'Som desativado 🔇', 'info');
     });
     document.getElementById('settingsBtn').addEventListener('click', function () { perform('settings'); });
+    var updateApplyBtn = document.getElementById('updateApplyBtn');
+    if (updateApplyBtn) updateApplyBtn.addEventListener('click', applyUpdate);
+    var updateLaterBtn = document.getElementById('updateLaterBtn');
+    if (updateLaterBtn) updateLaterBtn.addEventListener('click', hideUpdateAvailable);
     var installBtn = document.getElementById('installBtn');
     if (installBtn) {
       installBtn.addEventListener('click', function () {
@@ -1098,26 +1113,20 @@
     global.addEventListener('beforeunload', persist);
 
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      hadServiceWorkerController = Boolean(navigator.serviceWorker.controller);
       navigator.serviceWorker.register('service-worker.js').then(function (registration) {
         if (!registration) return;
-        var promptUpdate = function (worker) {
-          if (!worker || document.querySelector('.overlay')) return;
-          UI.showConfirm('⬆️ Atualização disponível', 'Uma nova versão do TamaVida está pronta.', '<p>Recarregue para usar as melhorias mais recentes.</p>', function () {
-            worker.postMessage({ type: 'SKIP_WAITING' });
-          }, 'Atualizar agora');
-        };
-        if (registration.waiting && navigator.serviceWorker.controller) promptUpdate(registration.waiting);
+        if (registration.waiting && navigator.serviceWorker.controller) showUpdateAvailable(registration.waiting);
         registration.addEventListener('updatefound', function () {
           var worker = registration.installing;
           if (!worker) return;
           worker.addEventListener('statechange', function () {
-            if (worker.state === 'installed' && navigator.serviceWorker.controller) promptUpdate(worker);
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) showUpdateAvailable(worker);
           });
         });
-        var refreshing = false;
         navigator.serviceWorker.addEventListener('controllerchange', function () {
-          if (refreshing) return;
-          refreshing = true;
+          if (refreshingAfterUpdate || !hadServiceWorkerController) return;
+          refreshingAfterUpdate = true;
           window.location.reload();
         });
       }).catch(function () { /* noop */ });
