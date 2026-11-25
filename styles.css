@@ -623,6 +623,12 @@ body[data-theme='day'] .alert-row { color: #a33d50; }
   background: linear-gradient(135deg, rgba(139, 107, 255, .28), rgba(192, 107, 255, .16));
 }
 
+.shop-search {
+  flex: 1; min-width: 150px; border: 1px solid var(--border-strong); border-radius: 9px;
+  background: var(--surface-2); color: var(--text); padding: 6px 10px; font-size: .72rem;
+}
+.item-card[hidden] { display: none !important; }
+
 .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 9px; }
 .item-card {
   border: 1px solid var(--border); border-radius: 13px; background: var(--surface-2);
@@ -869,6 +875,12 @@ body[data-theme='day'] .field input, body[data-theme='day'] .field textarea, bod
 .sprite[data-species='panda'] .ear.left { left: 10px; }
 .sprite[data-species='panda'] .ear.right { right: 10px; }
 .sprite[data-species='nuvem'] .ear { clip-path: polygon(50% 0, 100% 100%, 0 100%); background: linear-gradient(var(--c1), var(--c2)); }
+.sprite[data-species='tartaruga'] .ear { width: 26px; height: 26px; top: -8px; border-radius: 50%; clip-path: none; background: var(--c3); }
+.sprite[data-species='tartaruga'] .ear.left { left: 12px; }
+.sprite[data-species='tartaruga'] .ear.right { right: 12px; }
+.sprite[data-species='raposa'] .ear { height: 48px; top: -20px; clip-path: polygon(50% 0, 100% 100%, 0 100%); background: linear-gradient(var(--c1), var(--c2)); }
+.sprite[data-species='raposa'] .ear.left { left: 12px; transform: rotate(-8deg); }
+.sprite[data-species='raposa'] .ear.right { right: 12px; transform: rotate(8deg); }
 .sprite .sweat { display: none; position: absolute; top: 44px; right: -10px; font-size: 1rem; z-index: 5; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .25)); }
 .sprite[data-illness='1'] .sweat { display: block; animation: sweatDrop 1.5s ease-in-out infinite; }
 .sprite .accessory-glow { display: none; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); font-size: .8rem; color: var(--yellow); letter-spacing: 5px; white-space: nowrap; animation: twinkle 1.8s infinite alternate; z-index: 4; text-shadow: 0 0 8px var(--yellow); }
@@ -890,6 +902,9 @@ body[data-theme='day'] .field input, body[data-theme='day'] .field textarea, bod
 #screen[data-decor='library'] .room::before { background: linear-gradient(180deg, rgba(150, 100, 60, .18), rgba(70, 40, 25, .7)); }
 #screen[data-decor='library'] .toy-corner::after { content: '📚'; position: absolute; left: 20px; bottom: 0; font-size: 1.3rem; }
 #screen[data-decor='library'] .toy-corner { position: relative; }
+#screen[data-decor='garden'] .room::before { background: linear-gradient(180deg, rgba(90, 180, 110, .18), rgba(30, 80, 50, .65)); }
+#screen[data-decor='garden'] .toy-corner::after { content: '🪴'; position: absolute; right: 20px; bottom: 0; font-size: 1.3rem; }
+#screen[data-decor='garden'] .toy-corner { position: relative; }
 
 .daily-event { display: flex; align-items: center; gap: 10px; margin: 10px 0; padding: 10px; border-radius: 12px; border: 1px solid var(--border-strong); background: linear-gradient(135deg, rgba(139, 107, 255, .18), rgba(255, 123, 184, .12)); }
 .daily-event > span { font-size: 1.7rem; line-height: 1; }
@@ -956,6 +971,10 @@ body[data-theme='day'] .field input, body[data-theme='day'] .field textarea, bod
 .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 12px 0; }
 .summary-row { display: flex; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); font-size: .76rem; }
 .help-grid { display: grid; gap: 8px; }
+.change-item { margin-bottom: 12px; padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.change-item b { font-size: .78rem; }
+.change-item ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); font-size: .72rem; line-height: 1.5; }
+
 .help-row { display: flex; justify-content: space-between; gap: 10px; align-items: center; padding: 9px 10px; border-radius: 10px; background: var(--surface-2); font-size: .78rem; }
 .help-row kbd { display: inline-block; min-width: 28px; padding: 2px 7px; border-radius: 7px; border: 1px solid var(--border-strong); background: rgba(255,255,255,.08); font: inherit; font-size: .72rem; text-align: center; }
 

@@ -82,6 +82,24 @@
       rate: { hunger: 0.9, happiness: 1.2, energy: 1.1, hygiene: 0.95 },
       names: ['Ovo de arco-íris', 'Nuvenzinha', 'Nuvem fofinha', 'Nuvem saltitante', 'Nuvem guardiã', 'Nuvem serena'],
       description: 'Alegre e leve. Seu humor melhora até em dias chuvosos.'
+    },
+    {
+      id: 'tartaruga',
+      name: 'Tartaruga',
+      emoji: '🐢',
+      colors: ['#8fd6a0', '#4b8f6b', '#e6d27a'],
+      rate: { hunger: 0.8, happiness: 0.95, energy: 0.7, hygiene: 1.15 },
+      names: ['Ovo de tartaruga', 'Tartaruguinha', 'Tartaruga ágil', 'Tartaruga jovem', 'Tartaruga sábia', 'Tartaruga anciã'],
+      description: 'Lenta e serena. Economiza energia e envelhece com sabedoria.'
+    },
+    {
+      id: 'raposa',
+      name: 'Raposinha',
+      emoji: '🦊',
+      colors: ['#ff9a55', '#e2632f', '#ffe8c9'],
+      rate: { hunger: 1.15, happiness: 1.1, energy: 1.05, hygiene: 0.9 },
+      names: ['Ovo de raposa', 'Raposinha', 'Raposa esperta', 'Raposa jovem', 'Raposa elegante', 'Raposa lendária'],
+      description: 'Esperta e brincalhona. Adora passeios e pequenas surpresas.'
     }
   ];
 
@@ -132,7 +150,14 @@
     { id: 'aquarium', name: 'Aquário', emoji: '🐠', type: 'decor', decor: 'ocean', price: 180, xp: 10, desc: 'Peixes coloridos para relaxar.' },
     { id: 'galaxy', name: 'Mural galáxia', emoji: '🌌', type: 'decor', decor: 'space', price: 260, xp: 15, desc: 'Um céu estrelado dentro de casa.' },
     { id: 'lantern', name: 'Lanterna de papel', emoji: '🏮', type: 'decor', decor: 'lantern', price: 140, xp: 8, desc: 'Uma luz quentinha para o quarto à noite.' },
-    { id: 'bookshelf', name: 'Estante de livros', emoji: '📚', type: 'decor', decor: 'library', price: 220, xp: 12, desc: 'Histórias e conforto em cada prateleira.' }
+    { id: 'bookshelf', name: 'Estante de livros', emoji: '📚', type: 'decor', decor: 'library', price: 220, xp: 12, desc: 'Histórias e conforto em cada prateleira.' },
+    { id: 'melon', name: 'Melão doce', emoji: '🍈', type: 'food', price: 88, hunger: 30, happiness: 10, weight: 3, xp: 11, desc: 'Doce e suculento. Acalma a fome sem pesar.' },
+    { id: 'icecream', name: 'Sorvete', emoji: '🍦', type: 'food', price: 105, hunger: 18, happiness: 26, energy: 6, weight: 3, xp: 12, desc: 'Um refresco cremoso que alegra qualquer dia.' },
+    { id: 'sorbet', name: 'Sorbete refrescante', emoji: '🍧', type: 'food', price: 150, hunger: 22, happiness: 30, health: 3, weight: 4, xp: 16, desc: 'Feito na cozinha. Fome e humor ficam mais lentos.' },
+    { id: 'towel', name: 'Toalha quente', emoji: '🧺', type: 'care', price: 36, hygiene: 34, happiness: 6, xp: 7, desc: 'Seca e aqueca depois do banho.' },
+    { id: 'yoyo', name: 'Ioiô colorido', emoji: '🪀', type: 'toy', price: 65, happiness: 28, discipline: 8, xp: 10, desc: 'Brincadeira simples que exercita a paciência.' },
+    { id: 'bow', name: 'Laço de festa', emoji: '🎀', type: 'accessory', price: 170, bonus: { happiness: 0.12, hygiene: 0.06 }, desc: 'Charme extra com menos tristeza e sujeira.' },
+    { id: 'terrarium', name: 'Mini jardim', emoji: '🪴', type: 'decor', decor: 'garden', price: 200, xp: 11, desc: 'Um cantinho verde dentro de casa.' }
   ];
 
   var QUESTS = [
@@ -366,28 +391,33 @@
     { id: 'musicbox', name: 'Caixa de música', emoji: '🎵', ingredients: { ball: 1, piano: 1 }, result: 'musicbox', amount: 1, xp: 18, desc: 'Une brincadeira e música.' },
     { id: 'elixir', name: 'Elixir da vida', emoji: '🧪', ingredients: { medicine: 1, milk: 2, energy: 1 }, result: 'elixir', amount: 1, xp: 30, desc: 'Reanima um bichinho crítico.' },
     { id: 'bubbleRecipe', name: 'Chá com bolhas', emoji: '🧋', ingredients: { milk: 1, juice: 1, cookie: 1 }, result: 'bubbletea', amount: 2, xp: 16, desc: 'Um refresco doce feito em casa.' },
-    { id: 'kiteRecipe', name: 'Pipeta colorida', emoji: '🪁', ingredients: { ball: 1, brush: 1, carrot: 1 }, result: 'kite', amount: 1, xp: 14, desc: 'Junta papel, linha e muita diversão.' }
+    { id: 'kiteRecipe', name: 'Pipeta colorida', emoji: '🪁', ingredients: { ball: 1, brush: 1, carrot: 1 }, result: 'kite', amount: 1, xp: 14, desc: 'Junta papel, linha e muita diversão.' },
+    { id: 'melonRecipe', name: 'Salada de melão', emoji: '🍈', ingredients: { apple: 1, milk: 1, carrot: 1 }, result: 'melon', amount: 2, xp: 18, desc: 'Um lanche fresco feito com a horta.' },
+    { id: 'bowRecipe', name: 'Laço artesanal', emoji: '🎀', ingredients: { ball: 1, brush: 1, cookie: 1 }, result: 'bow', amount: 1, xp: 16, desc: 'Um enfeite novo para o bichinho.' }
   ];
 
   var BUFFS = {
     soup: { name: 'Sopa da horta', emoji: '🍲', minutes: 30, desc: 'A fome diminui 25% mais devagar.' },
     juice: { name: 'Suco energético', emoji: '🧃', minutes: 30, desc: 'A energia diminui 25% mais devagar.' },
     luck: { name: 'Torta da sorte', emoji: '🥧', minutes: 20, desc: 'Minigames rendem 25% mais moedas.' },
-    tea: { name: 'Chá brilhante', emoji: '🍵', minutes: 20, desc: 'Todas as atividades rendem 25% mais XP.' }
+    tea: { name: 'Chá brilhante', emoji: '🍵', minutes: 20, desc: 'Todas as atividades rendem 25% mais XP.' },
+    sorbet: { name: 'Sorbete refrescante', emoji: '🍧', minutes: 25, desc: 'Fome e humor diminuem 25% mais devagar.' }
   };
 
   var DISHES = [
     { id: 'soup', name: 'Sopa da horta', emoji: '🍲', ingredients: { carrot: 2, milk: 1 }, result: 'soup', amount: 2, xp: 14, desc: 'Fome lenta por 30 min.' },
     { id: 'juice', name: 'Suco energético', emoji: '🧃', ingredients: { apple: 2, energy: 1 }, result: 'juice', amount: 2, xp: 14, desc: 'Energia lenta por 30 min.' },
     { id: 'luckpie', name: 'Torta da sorte', emoji: '🥧', ingredients: { milk: 1, apple: 1, cake: 1 }, result: 'luckpie', amount: 1, xp: 18, desc: 'Mais moedas em jogos por 20 min.' },
-    { id: 'shineTea', name: 'Chá brilhante', emoji: '🍵', ingredients: { carrot: 1, milk: 1, cookie: 1 }, result: 'shineTea', amount: 2, xp: 18, desc: 'Mais XP por 20 min.' }
+    { id: 'shineTea', name: 'Chá brilhante', emoji: '🍵', ingredients: { carrot: 1, milk: 1, cookie: 1 }, result: 'shineTea', amount: 2, xp: 18, desc: 'Mais XP por 20 min.' },
+    { id: 'sorbetDish', name: 'Sorbete de frutas', emoji: '🍧', ingredients: { icecream: 1, milk: 1, apple: 1 }, result: 'sorbet', amount: 2, xp: 20, desc: 'Fome e humor lentos por 25 min.' }
   ];
 
   var TRADES = [
     { id: 'tradeCarrot', name: 'Cesta de cenouras', emoji: '🥕', dust: 2, duplicates: 2, result: 'carrot', amount: 5, desc: 'Ótimo para plantar e cozinhar.' },
     { id: 'tradeEnergy', name: 'Kit energético', emoji: '⚡', dust: 3, duplicates: 2, result: 'energy', amount: 2, desc: 'Recupera energia para novas aventuras.' },
     { id: 'tradeCake', name: 'Festa em caixa', emoji: '🍰', dust: 4, duplicates: 3, result: 'cake', amount: 2, desc: 'Dois bolos para comemorar.' },
-    { id: 'tradeElixir', name: 'Reserva de emergência', emoji: '🧪', dust: 8, duplicates: 6, result: 'elixir', amount: 1, desc: 'Um elixir para salvar um bichinho crítico.' }
+    { id: 'tradeElixir', name: 'Reserva de emergência', emoji: '🧪', dust: 8, duplicates: 6, result: 'elixir', amount: 1, desc: 'Um elixir para salvar um bichinho crítico.' },
+    { id: 'tradeBow', name: 'Enfeite de festa', emoji: '🎀', dust: 5, duplicates: 4, result: 'bow', amount: 1, desc: 'Um laço novo para enfeitar o bichinho.' }
   ];
 
   var FISH = [
@@ -400,13 +430,15 @@
     { id: 'park', name: 'Parque', emoji: '🌳', desc: 'Um passeio tranquilo, cheio de folhas e borboletas.', cost: 8, minLevel: 1, coins: [4, 10], xp: [4, 9], loot: ['apple', 'ball'], hint: 'Fácil • 8 ⚡' },
     { id: 'forest', name: 'Floresta', emoji: '🌲', desc: 'Trilhas sombrias com cogumelos e surpresas.', cost: 12, minLevel: 3, coins: [8, 16], xp: [8, 14], loot: ['milk', 'carrot', 'soap'], hint: 'Médio • 12 ⚡' },
     { id: 'beach', name: 'Praia', emoji: '🏖️', desc: 'Areia, conchas e um mergulho revigorante.', cost: 16, minLevel: 5, coins: [12, 22], xp: [12, 20], loot: ['sushi', 'cake', 'perfume'], hint: 'Médio • 16 ⚡' },
-    { id: 'city', name: 'Cidade', emoji: '🏙️', desc: 'Vitrines, praças e o cheiro de padaria.', cost: 20, minLevel: 8, coins: [18, 30], xp: [18, 28], loot: ['cake', 'piano', 'musicbox'], hint: 'Difícil • 20 ⚡' }
+    { id: 'city', name: 'Cidade', emoji: '🏙️', desc: 'Vitrines, praças e o cheiro de padaria.', cost: 20, minLevel: 8, coins: [18, 30], xp: [18, 28], loot: ['cake', 'piano', 'musicbox'], hint: 'Difícil • 20 ⚡' },
+    { id: 'botanic', name: 'Jardim botânico', emoji: '🌷', desc: 'Estufas, borboletas e um cheiro de terra molhada.', cost: 18, minLevel: 6, coins: [14, 24], xp: [14, 22], loot: ['melon', 'icecream', 'towel'], hint: 'Médio • 18 ⚡' }
   ];
 
   var ENEMIES = [
     { id: 'slime', name: 'Slime', emoji: '🟢', desc: 'Gelatinoso e atrapalhado, mas persistente.', hp: 18, atk: 4, def: 1, coins: 8, xp: 8, minLevel: 1, loot: 'apple' },
     { id: 'rato', name: 'Rato fominha', emoji: '🐀', desc: 'Rápido e faminto. Cuidado com a mordida!', hp: 26, atk: 6, def: 2, coins: 12, xp: 12, minLevel: 3, loot: 'carrot' },
     { id: 'morcego', name: 'Morcego', emoji: '🦇', desc: 'Ataca no escuro e desvia com facilidade.', hp: 34, atk: 8, def: 3, coins: 17, xp: 17, minLevel: 5, loot: 'medicine' },
+    { id: 'raposinha', name: 'Raposa travessa', emoji: '🦊', desc: 'Rápida e esperta. Tenta roubar seu laço!', hp: 40, atk: 9, def: 4, coins: 22, xp: 22, minLevel: 6, loot: 'bow' },
     { id: 'golem', name: 'Golem de pedra', emoji: '🗿', desc: 'Lento, mas muito resistente. O chefe da floresta!', hp: 48, atk: 11, def: 5, coins: 28, xp: 30, minLevel: 8, loot: 'elixir', boss: true }
   ];
 
@@ -446,8 +478,38 @@
     });
   }
 
+  var CHANGES = [
+    {
+      version: 'v40',
+      title: 'Mais amigos e descobertas',
+      items: [
+        'Duas espécies novas: tartaruga e raposinha.',
+        'Sete itens novos, dois pratos, receitas, troca, passeio e batalha inéditos.',
+        'Busca na loja, painel de novidades e aviso ao concluir uma atualização.'
+      ]
+    },
+    {
+      version: 'v39',
+      title: 'Atualização mais esperta',
+      items: [
+        'Checagem automática ao abrir, voltar ou a cada 10 minutos.',
+        'Botão ⬆️ fixo no topo, com destaque quando há nova versão.',
+        'Versão exibida em Configurações e Ajuda.'
+      ]
+    },
+    {
+      version: 'v38',
+      title: 'Aviso de nova versão',
+      items: [
+        'Faixa de atualização com “Atualizar agora” e “Depois”.',
+        'Aplicação da nova versão sem fechar o app.'
+      ]
+    }
+  ];
+
   global.TamaData = {
-    VERSION: 'v39',
+    VERSION: 'v40',
+    CHANGES: CHANGES,
     STAGES: STAGES,
     SPECIES: SPECIES,
     PERSONALITIES: PERSONALITIES,

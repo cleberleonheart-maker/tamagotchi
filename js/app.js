@@ -52,6 +52,7 @@
     if (!worker) return;
     hideUpdateAvailable();
     UI.closeModal();
+    try { global.localStorage.setItem('tamavida.justUpdated', '1'); } catch (e) { /* noop */ }
     worker.postMessage({ type: 'SKIP_WAITING' });
   }
 
@@ -1033,6 +1034,12 @@
     UI.render(state, { tab: currentTab });
     announceStreak(startupEvents.streak);
     announceExtraEvents(startupEvents);
+    try {
+      if (global.localStorage.getItem('tamavida.justUpdated')) {
+        global.localStorage.removeItem('tamavida.justUpdated');
+        setTimeout(function () { UI.toast('Atualizado para ' + D.VERSION + ' 🎉', 'good'); }, 900);
+      }
+    } catch (e) { /* noop */ }
 
     if (awayMinutes >= 2 && petBefore && state.pets.length) {
       var notes = [];

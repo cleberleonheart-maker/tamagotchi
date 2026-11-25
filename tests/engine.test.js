@@ -31,19 +31,28 @@ function test(name, fn) {
 }
 
 test('catálogo possui espécies, itens, fases e conquistas', () => {
-  assert.equal(D.SPECIES.length, 8);
+  assert.equal(D.SPECIES.length, 10);
   assert.equal(D.STAGES.length, 6);
-  assert.ok(D.ITEMS.length >= 15);
+  assert.ok(D.ITEMS.length >= 54);
   assert.ok(D.ACHIEVEMENTS.length >= 15);
-  assert.equal(D.WALKS.length, 4);
-  assert.equal(D.ENEMIES.length, 4);
+  assert.equal(D.WALKS.length, 5);
+  assert.equal(D.ENEMIES.length, 5);
   assert.equal(D.item('apple').name, 'Maçã');
   assert.ok(D.species('panda').names.length === D.STAGES.length);
   assert.ok(D.species('nuvem').colors.length === 3);
+  assert.ok(D.species('tartaruga').names.length === D.STAGES.length);
+  assert.ok(D.species('raposa').colors.length === 3);
   assert.ok(D.item('bubbletea'));
   assert.ok(D.item('kite'));
   assert.ok(D.item('headphones'));
   assert.ok(D.item('bookshelf'));
+  assert.ok(D.item('melon'));
+  assert.ok(D.item('icecream'));
+  assert.ok(D.item('sorbet'));
+  assert.ok(D.item('towel'));
+  assert.ok(D.item('yoyo'));
+  assert.ok(D.item('bow'));
+  assert.ok(D.item('terrarium'));
 });
 
 test('adoção cria ovo com atributos iniciais', () => {
@@ -447,6 +456,17 @@ test('novas receitas e itens entram no inventário e podem ser usados', () => {
   assert.equal(used.ok, true);
   assert.ok(pet.happiness > 10);
   assert.ok(D.RECIPES.some((recipe) => recipe.id === 'kiteRecipe'));
+});
+
+test('conteúdo e novidades da versão 40 estão disponíveis', () => {
+  assert.ok(D.RECIPES.some((recipe) => recipe.id === 'melonRecipe'));
+  assert.ok(D.RECIPES.some((recipe) => recipe.id === 'bowRecipe'));
+  assert.ok(D.DISHES.some((dish) => dish.id === 'sorbetDish'));
+  assert.ok(D.BUFFS.sorbet);
+  assert.ok(D.TRADES.some((trade) => trade.id === 'tradeBow'));
+  assert.ok(D.WALKS.some((walk) => walk.id === 'botanic'));
+  assert.ok(D.ENEMIES.some((enemy) => enemy.id === 'raposinha'));
+  assert.ok(D.CHANGES.some((change) => change.version === D.VERSION));
 });
 
 test('configurações de acessibilidade e tutorial sobrevivem ao save', () => {

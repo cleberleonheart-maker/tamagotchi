@@ -10,11 +10,11 @@ Basta abrir `index.html` no navegador. Para instalar como aplicativo (PWA) e ati
 python3 -m http.server 8080
 ```
 
-Acesse `http://localhost:8080`, clique no botão **Instalar aplicativo** do navegador (quando disponível) e pronto. No celular, use a versão publicada em `https://cleberleonheart-maker.github.io/tamagotchi/`. Quando houver nova versão, o botão ⬆️ do topo fica destacado e uma faixa oferece **Atualizar agora**; a versão atual aparece em Configurações e na Ajuda.
+Acesse `http://localhost:8080`, clique no botão **Instalar aplicativo** do navegador (quando disponível) e pronto. No celular, use a versão publicada em `https://cleberleonheart-maker.github.io/tamagotchi/`. Quando houver nova versão, o botão ⬆️ do topo fica destacado e uma faixa oferece **Atualizar agora**; a versão atual aparece em Configurações e na Ajuda, com histórico no painel **📜 Novidades**.
 
 ## Recursos
 
-- **8 espécies** com características, paletas e nomes diferentes por fase.
+- **10 espécies** com características, paletas e nomes diferentes por fase.
 - **6 fases de evolução**: ovo → bebê → criança → adolescente → adulto → idoso. A evolução exige idade **e** cuidados.
 - **6 atributos** que decaem com o tempo: fome, felicidade, energia, higiene, saúde e disciplina. A **qualidade dos cuidados** define quanto de "carinho" cada ação entrega.
 - **Ações**: alimentar, brincar, banho, decorar, dormir, treinar, carinho, conversar, cuidados médicos e reviver.
@@ -28,28 +28,28 @@ Acesse `http://localhost:8080`, clique no botão **Instalar aplicativo** do nave
 - **Foco com tarefa**: nomeie a sessão; ao concluir ela vira memória no diário e conta minutos focados do dia.
 - **Eventos do dia**: feira, chuva, festival, lua cheia e neve alteram comida, higiene, energia, sono e moedas dos minigames. Em dias chuvosos chovem gotas na tela e batalhas causam 15% menos dano; em dias nevados caem flocos, a energia gasta 30% mais rápido e passeios rendem 25% menos, mas acessórios de frio reduzem esse gasto e aparecem no sprite (respeitando "reduzir movimento"). O painel de desafios traz uma missão climática por dia e a previsão dos próximos 3 dias.
 - **Visuais de evento**: o cenário ganha decorações e brilho próprios para feira, chuva, festival, lua cheia e neve, com aura de humor no sprite, balões de fala com cauda, plantas da horta em estágios de crescimento e pódio no ranking.
-- **Economia**: moedas, loja com 47 itens, 3 ofertas diárias com desconto e estoque limitado, venda de itens, recompensas por nível/evolução/minigames/missões/foco. Compras pedem confirmação e mostram o saldo restante; o elixir exibe o nome do bichinho antes de reanimar.
-- **Inventário filtrável**: chips rápidos por comida, cuidado, brinquedos, acessórios e decoração.
+- **Economia**: moedas, loja com 54 itens, 3 ofertas diárias com desconto e estoque limitado, venda de itens, recompensas por nível/evolução/minigames/missões/foco. Compras pedem confirmação e mostram o saldo restante; o elixir exibe o nome do bichinho antes de reanimar.
+- **Inventário e loja filtráveis**: chips rápidos por categoria e busca por nome na loja.
 - **4 minigames**: Pega comida, Tap Tap, Memória e Pesca do clima (pontuação → moedas + XP; a pesca também rende peixes), todos jogáveis por teclado.
 - **30 conquistas** que rendem +50 moedas cada.
 - **Sequência diária (streak)**: voltar todos os dias aumenta o contador e rende moedas extras em marcos de 3, 5 e 7 dias.
 - **Check-in diário**: faça check-in uma vez por dia no painel de desafios e ganhe 1 item surpresa; o prêmio do dia é fixo para todos e o check-in fica salvo no progresso.
 - **Horta**: 4 vagas para plantar 6 tipos de cultivo, regar para acelerar o crescimento e colher itens; chuva rega a horta automaticamente e colheitas sobrevivem ao save.
-- **Cozinha com buffs**: 4 pratos feitos com colheitas e itens da loja; comer um prato ativa bônus temporários (fome/energia mais lentas, +25% de moedas em jogos ou +25% de XP), visíveis no painel do pet.
-- **Mercado de trocas**: use pó de figurinha e duplicatas do álbum para pegar cenouras, energéticos, bolos ou elixires sem perder figurinhas únicas.
+- **Cozinha com buffs**: 5 pratos feitos com colheitas e itens da loja; comer um prato ativa bônus temporários (fome/energia/humor mais lentas, +25% de moedas em jogos ou +25% de XP), visíveis no painel do pet.
+- **Mercado de trocas**: use pó de figurinha e duplicatas do álbum para pegar cenouras, energéticos, bolos, elixires ou o laço de festa sem perder figurinhas únicas.
 - **Cartão compartilhável**: exporte um PNG com espécie, fase, nível, humor, streak, moedas, conquistas e figurinhas.
 - **Ranking semanal local**: pontos por alimentar, banhos, minigames, passeios, batalhas, foco e check-ins, com categoria líder, faixa de rank e recordes que permanecem entre semanas.
-- **Oficina**: 8 receitas para combinar itens do inventário (bolo, bandagem, perfume, tapete, caixa de música, elixir, chá com bolhas e pipeta colorida) e ganhar XP.
+- **Oficina**: 10 receitas para combinar itens do inventário (bolo, bandagem, perfume, tapete, caixa de música, elixir, chá com bolhas, pipeta colorida, salada de melão e laço artesanal) e ganhar XP.
 - **Tutorial interativo** de 5 passos no primeiro acesso, com dicas contextuais e opção de rever quando quiser.
 - **Aniversário do bichinho**: no dia da adoção (uma vez por ano) ele ganha bolo, moedas, felicidade e uma comemoração.
 - **Modo foco Pomodoro**: sessões de 25/15 minutos e pausas de 5 minutos, com timer persistente, moedas e XP ao concluir.
-- **Álbum de figurinhas**: 48 figurinhas por espécie/fase, duplicatas viram pó e 3 pó trocam por uma figurinha que falta. O pó e as repetições também alimentam o mercado de trocas.
-- **Aventura**: 4 passeios (parque, floresta, praia e cidade) com custo de energia, moedas, XP e itens; e 4 batalhas RPG por turnos (atacar, defender, usar item, fugir; atalhos 1-4) com chefes, derrotas críticas e recompensas. O clima do dia reduz recompensas de passeio na neve e dano em batalha na chuva.
+- **Álbum de figurinhas**: 60 figurinhas por espécie/fase, duplicatas viram pó e 3 pó trocam por uma figurinha que falta. O pó e as repetições também alimentam o mercado de trocas.
+- **Aventura**: 5 passeios (parque, floresta, praia, cidade e jardim botânico) com custo de energia, moedas, XP e itens; e 5 batalhas RPG por turnos (atacar, defender, usar item, fugir; atalhos 1-4) com chefes, derrotas críticas e recompensas. O clima do dia reduz recompensas de passeio na neve e dano em batalha na chuva.
 - **Até 4 bichinhos** simultâneos, com troca rápida pelo painel lateral.
 - **Estado crítico e revive**: se a saúde chegar a zero, use um Elixir da vida para trazer o bichinho de volta.
 - **Histórico em gráfico** com recordes e médias por atributo, exportação CSV, diário de eventos, metas de progresso e resumo do que aconteceu enquanto você esteve fora.
 - **Diário ilustrado**: registre momentos com legenda e emoção, veja as miniaturas e exporte tudo como PNG.
-- **Acessórios** com bônus passivos, incluindo cachecol, luvas, botas de neve e casaco pesado (proteção extra no frio e visualmente equipados no sprite). Trocar de acessório devolve o anterior para a bolsa; **decorações** (tapete, aquário, mural galáxia) mudam o visual do quarto.
+- **Acessórios** com bônus passivos, incluindo cachecol, luvas, botas de neve e casaco pesado (proteção extra no frio e visualmente equipados no sprite). Trocar de acessório devolve o anterior para a bolsa; **decorações** (tapete, aquário, mural galáxia, lanterna, estante e mini jardim) mudam o visual do quarto.
 - **Persistência automática** em `localStorage`, **3 slots de save**, sanitização de saves corrompidos, exportação/importação de save em Base64 e funcionamento offline via service worker.
 - **Notificações** opcionais quando uma necessidade fica baixa.
 - **Tema dia/noite automático** que acompanha o relógio (06h-18h dia, 18h-06h noite), com opção manual, alto contraste, tamanho de fonte ampliado, modo reduzir movimento e avisos visuais para efeitos sonoros.

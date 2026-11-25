@@ -412,6 +412,7 @@
         '<option value="1">1</option><option value="5">5</option><option value="10">10</option>' +
       '</select>' +
       '<span class="muted">Saldo: <b style="color:var(--yellow)">🪙 ' + state.coins + '</b></span>' +
+      '<input id="shopSearch" class="shop-search" type="search" placeholder="🔎 Buscar item..." aria-label="Buscar item na loja">' +
       '</div>' +
       '<div class="item-grid">' + DATA.ITEMS.map(function (item) { return itemCard(item, state, pet, 'shop'); }).join('') + '</div>';
   }
@@ -773,7 +774,18 @@
     if (!panel) return;
     panel.setAttribute('aria-labelledby', 'tab-' + activeTab);
     if (activeTab === 'inventory') panel.innerHTML = inventoryMarkup(state, pet, filter || 'all');
-    else if (activeTab === 'shop') panel.innerHTML = shopMarkup(state, pet);
+    else if (activeTab === 'shop') {
+      panel.innerHTML = shopMarkup(state, pet);
+      var shopSearch = $('#shopSearch', panel);
+      if (shopSearch) {
+        shopSearch.addEventListener('input', function () {
+          var term = shopSearch.value.trim().toLowerCase();
+          $$('.item-card', panel).forEach(function (card) {
+            card.hidden = !!term && card.textContent.toLowerCase().indexOf(term) < 0;
+          });
+        });
+      }
+    }
     else if (activeTab === 'craft') panel.innerHTML = craftMarkup(state);
     else if (activeTab === 'kitchen') panel.innerHTML = kitchenMarkup(state);
     else if (activeTab === 'trades') panel.innerHTML = tradeMarkup(state);
@@ -1241,6 +1253,22 @@
         '<div class="help-row"><span><kbd>←</kbd> <kbd>→</kbd></span><span>Navegar entre abas</span></div>' +
         '</div>' +
         '<p class="muted" style="margin-top:12px">Dica: use 📲 para instalar o app e jogar offline. Quando houver nova versão, use a faixa ⬆️ no topo para atualizar. Versão atual: <b>' + DATA.VERSION + '</b>.</p>',
+      actions: [
+        { label: '📜 Novidades', cls: 'ghost', onClick: function () { showChangelog(); return false; } },
+        { label: 'Fechar', cls: 'primary' }
+      ]
+    });
+  }
+
+  function showChangelog() {
+    var entries = (DATA.CHANGES || []).map(function (change) {
+      return '<div class="change-item"><b>' + esc(change.version) + ' — ' + esc(change.title) + '</b>' +
+        '<ul>' + change.items.map(function (item) { return '<li>' + esc(item) + '</li>'; }).join('') + '</ul></div>';
+    }).join('');
+    openModal({
+      title: '📜 Novidades',
+      sub: 'Versão atual: ' + DATA.VERSION,
+      body: entries || '<p class="muted">Nenhuma novidade registrada.</p>',
       actions: [{ label: 'Fechar', cls: 'primary' }]
     });
   }
@@ -1294,7 +1322,7 @@
         }).join('') + '</div></div>' +
         '<p class="muted" style="margin-top:12px">Atalhos: <b>Espaço</b> faz carinho, <b>C</b> abre a loja, <b>J</b> inicia um minigame, <b>?</b> abre ajuda, <b>Esc</b> fecha janelas.</p>' +
         '<p class="muted" style="margin-top:10px">Versão: <b>' + DATA.VERSION + '</b></p>' +
-        '<div class="data-actions" style="margin-top:10px"><button class="ghost-btn" type="button" data-check-update>⬆️ Verificar atualização</button></div>',
+        '<div class="data-actions" style="margin-top:10px"><button class="ghost-btn" type="button" data-check-update>⬆️ Verificar atualização</button><button class="ghost-btn" type="button" data-changelog>📜 Ver novidades</button></div>',
       actions: [{ label: 'Pronto', cls: 'primary' }],
       onMount: function (modal) {
         $$('[data-toggle]', modal).forEach(function (button) {
@@ -1346,6 +1374,8 @@
             if (handlers && handlers.onCheckUpdate) handlers.onCheckUpdate(checkUpdate);
           });
         }
+        var changelog = $('[data-changelog]', modal);
+        if (changelog) changelog.addEventListener('click', showChangelog);
       }
     });
   }
@@ -1562,6 +1592,7 @@
     showMoment: showMoment,
     drawMomentCanvas: drawMomentCanvas,
     showHelp: showHelp,
+    showChangelog: showChangelog,
     showExport: showExport,
     showImport: showImport,
     showReset: showReset,
