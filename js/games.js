@@ -12,7 +12,7 @@
   var cleanup = [];
   var keyHandler = null;
 
-  var FOODS = ['🍎', '🍪', '🍣', '🍰', '🍇', '🍓', '🥕'];
+  var FOODS = ['🍎', '🍪', '🍣', '🍰', '🍇', '🍓', '🥕', '🧋', '🥮'];
 
   function el(tag, className, html) {
     var node = document.createElement(tag);

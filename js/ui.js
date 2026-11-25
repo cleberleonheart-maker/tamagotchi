@@ -1240,7 +1240,7 @@
         '<div class="help-row"><span><kbd>Esc</kbd></span><span>Fechar janela/minigame</span></div>' +
         '<div class="help-row"><span><kbd>←</kbd> <kbd>→</kbd></span><span>Navegar entre abas</span></div>' +
         '</div>' +
-        '<p class="muted" style="margin-top:12px">Dica: use 📲 para instalar o app e jogar offline. Quando houver nova versão, use a faixa ⬆️ no topo para atualizar.</p>',
+        '<p class="muted" style="margin-top:12px">Dica: use 📲 para instalar o app e jogar offline. Quando houver nova versão, use a faixa ⬆️ no topo para atualizar. Versão atual: <b>' + DATA.VERSION + '</b>.</p>',
       actions: [{ label: 'Fechar', cls: 'primary' }]
     });
   }
@@ -1292,8 +1292,9 @@
             '<button class="mini-btn" type="button" data-slot-save="' + slot.index + '">Salvar</button>' +
             '<button class="mini-btn" type="button" data-slot-load="' + slot.index + '"' + (slot.savedAt ? '' : ' disabled') + '>Carregar</button></div>';
         }).join('') + '</div></div>' +
-      '<p class="muted" style="margin-top:12px">Atalhos: <b>Espaço</b> faz carinho, <b>C</b> abre a loja, <b>J</b> inicia um minigame, <b>?</b> abre ajuda, <b>Esc</b> fecha janelas.</p>' +
-      '<div class="data-actions" style="margin-top:10px"><button class="ghost-btn" type="button" data-check-update>⬆️ Verificar atualização</button></div>',
+        '<p class="muted" style="margin-top:12px">Atalhos: <b>Espaço</b> faz carinho, <b>C</b> abre a loja, <b>J</b> inicia um minigame, <b>?</b> abre ajuda, <b>Esc</b> fecha janelas.</p>' +
+        '<p class="muted" style="margin-top:10px">Versão: <b>' + DATA.VERSION + '</b></p>' +
+        '<div class="data-actions" style="margin-top:10px"><button class="ghost-btn" type="button" data-check-update>⬆️ Verificar atualização</button></div>',
       actions: [{ label: 'Pronto', cls: 'primary' }],
       onMount: function (modal) {
         $$('[data-toggle]', modal).forEach(function (button) {

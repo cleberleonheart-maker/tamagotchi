@@ -64,6 +64,24 @@
       rate: { hunger: 1.25, happiness: 0.9, energy: 0.85, hygiene: 1.05 },
       names: ['Ovo mel', 'Ursinho', 'Urso gordinho', 'Urso jovem', 'Urso imponente', 'Urso sábio'],
       description: 'Comilão e dorminhoco. Precisa de comida constante.'
+    },
+    {
+      id: 'panda',
+      name: 'Pandinha',
+      emoji: '🐼',
+      colors: ['#f7f7f7', '#2b2b35', '#7ecb9c'],
+      rate: { hunger: 1.1, happiness: 1.05, energy: 0.9, hygiene: 1.1 },
+      names: ['Ovo de panda', 'Pandinha', 'Panda travesso', 'Panda jovem', 'Panda elegante', 'Panda ancião'],
+      description: 'Calmo e guloso. Adora folhas frescas e sonecas longas.'
+    },
+    {
+      id: 'nuvem',
+      name: 'Nuvem',
+      emoji: '🌈',
+      colors: ['#a8e6ff', '#f6c1ff', '#fff3a6'],
+      rate: { hunger: 0.9, happiness: 1.2, energy: 1.1, hygiene: 0.95 },
+      names: ['Ovo de arco-íris', 'Nuvenzinha', 'Nuvem fofinha', 'Nuvem saltitante', 'Nuvem guardiã', 'Nuvem serena'],
+      description: 'Alegre e leve. Seu humor melhora até em dias chuvosos.'
     }
   ];
 
@@ -82,6 +100,8 @@
     { id: 'fish', name: 'Peixe prateado', emoji: '🐟', type: 'food', price: 34, hunger: 20, happiness: 3, weight: 2, xp: 7, desc: 'Pescado comum, rico em proteína.' },
     { id: 'tropicalfish', name: 'Peixe tropical', emoji: '🐠', type: 'food', price: 58, hunger: 24, happiness: 6, weight: 2, xp: 10, desc: 'Um peixe colorido dos dias de festa.' },
     { id: 'pufferfish', name: 'Baiacu', emoji: '🐡', type: 'food', price: 66, hunger: 28, happiness: 8, weight: 3, xp: 12, desc: 'Pescado esperto, encontrado na chuva e na neve.' },
+    { id: 'bubbletea', name: 'Chá com bolhas', emoji: '🧋', type: 'food', price: 95, hunger: 26, happiness: 16, energy: 10, weight: 3, xp: 12, desc: 'Doce e refrescante. Anima até o bichinho mais tímido.' },
+    { id: 'mooncake', name: 'Bolo da lua', emoji: '🥮', type: 'food', price: 120, hunger: 34, happiness: 20, health: 4, weight: 4, xp: 16, desc: 'Um bolinho dourado que alegra e fortalece.' },
     { id: 'soap', name: 'Sabão', emoji: '🧼', type: 'care', price: 22, hygiene: 38, happiness: 2, xp: 4, desc: 'Tira a sujeira do dia.' },
     { id: 'shampoo', name: 'Shampoo', emoji: '🫧', type: 'care', price: 46, hygiene: 65, happiness: 8, xp: 7, desc: 'Banho completo e cheiroso.' },
     { id: 'brush', name: 'Escova', emoji: '🪥', type: 'care', price: 38, hygiene: 18, discipline: 14, xp: 6, desc: 'Higiene e disciplina em um só item.' },
@@ -89,11 +109,15 @@
     { id: 'bandage', name: 'Bandagem', emoji: '🩹', type: 'care', price: 44, health: 28, cures: true, xp: 8, desc: 'Cura doenças rapidamente.' },
     { id: 'perfume', name: 'Perfume', emoji: '🌸', type: 'care', price: 55, hygiene: 30, happiness: 12, xp: 8, desc: 'Cheiroso e animado.' },
     { id: 'elixir', name: 'Elixir da vida', emoji: '🧪', type: 'care', price: 160, health: 100, energy: 40, xp: 30, desc: 'Reanima um bichinho em estado crítico.' },
+    { id: 'sponge', name: 'Esponja mágica', emoji: '🧽', type: 'care', price: 40, hygiene: 30, happiness: 4, xp: 6, desc: 'Remove sujeira teimosa sem gastar muito.' },
+    { id: 'vitamin', name: 'Vitamina', emoji: '🍊', type: 'care', price: 70, health: 20, energy: 12, xp: 8, desc: 'Um reforço diário de saúde e disposição.' },
     { id: 'ball', name: 'Bola', emoji: '⚽', type: 'toy', price: 42, happiness: 22, energy: 8, xp: 8, desc: 'Brincadeira clássica.' },
     { id: 'piano', name: 'Pianinho', emoji: '🎹', type: 'toy', price: 96, happiness: 38, energy: 10, xp: 15, desc: 'Seu bichinho vai amar fazer música.' },
     { id: 'console', name: 'Videogame', emoji: '🎮', type: 'toy', price: 185, happiness: 58, energy: 14, xp: 24, desc: 'Diversão garantida por horas.' },
     { id: 'musicbox', name: 'Caixa de música', emoji: '🎵', type: 'toy', price: 110, happiness: 42, energy: 6, xp: 18, desc: 'Uma melodia que acalma e diverte.' },
     { id: 'gift', name: 'Presente surpresa', emoji: '🎁', type: 'toy', price: 100, happiness: 50, health: 10, xp: 20, desc: 'Uma caixa misteriosa. Perfeita para aniversários.' },
+    { id: 'kite', name: 'Pipeta colorida', emoji: '🪁', type: 'toy', price: 80, happiness: 32, energy: 12, xp: 12, desc: 'Correr atrás do vento nunca foi tão divertido.' },
+    { id: 'puzzle', name: 'Quebra-cabeça', emoji: '🧩', type: 'toy', price: 120, happiness: 40, discipline: 10, xp: 16, desc: 'Diversão que também exercita a paciência.' },
     { id: 'hat', name: 'Boné', emoji: '🧢', type: 'accessory', price: 120, bonus: { happiness: 0.18 }, desc: 'Estilo despojado. Reduz a tristeza.' },
     { id: 'glasses', name: 'Óculos', emoji: '👓', type: 'accessory', price: 150, bonus: { hunger: 0.16 }, desc: 'Parece inteligente. Fica com fome mais devagar.' },
     { id: 'crown', name: 'Coroa', emoji: '👑', type: 'accessory', price: 320, bonus: { hygiene: 0.25, happiness: 0.15 }, desc: 'Realeza absoluta. Sujeira e tristeza mais lentas.' },
@@ -102,9 +126,13 @@
     { id: 'gloves', name: 'Luvas', emoji: '🧤', type: 'accessory', price: 150, warmth: 0.12, bonus: { hygiene: 0.08 }, desc: 'Protege as patinhas e evita sujeira na neve.' },
     { id: 'boots', name: 'Botas de neve', emoji: '🥾', type: 'accessory', price: 190, warmth: 0.15, bonus: { energy: 0.08 }, desc: 'Caminha na neve sem cansar tanto.' },
     { id: 'coat', name: 'Casaco pesado', emoji: '🧥', type: 'accessory', price: 260, warmth: 0.2, bonus: { happiness: 0.12 }, desc: 'O melhor abrigo para o Dia nevado.' },
+    { id: 'headphones', name: 'Fones de ouvido', emoji: '🎧', type: 'accessory', price: 210, bonus: { happiness: 0.14, energy: 0.08 }, desc: 'Música o dia todo. Menos tédio e menos cansaço.' },
+    { id: 'cape', name: 'Capa de herói', emoji: '🦸', type: 'accessory', price: 240, warmth: 0.08, bonus: { hygiene: 0.12, happiness: 0.1 }, desc: 'Visual de herói com um pouco de proteção extra.' },
     { id: 'rug', name: 'Tapete feliz', emoji: '🧶', type: 'decor', decor: 'cozy', price: 90, xp: 5, desc: 'Deixa o quarto aconchegante.' },
     { id: 'aquarium', name: 'Aquário', emoji: '🐠', type: 'decor', decor: 'ocean', price: 180, xp: 10, desc: 'Peixes coloridos para relaxar.' },
-    { id: 'galaxy', name: 'Mural galáxia', emoji: '🌌', type: 'decor', decor: 'space', price: 260, xp: 15, desc: 'Um céu estrelado dentro de casa.' }
+    { id: 'galaxy', name: 'Mural galáxia', emoji: '🌌', type: 'decor', decor: 'space', price: 260, xp: 15, desc: 'Um céu estrelado dentro de casa.' },
+    { id: 'lantern', name: 'Lanterna de papel', emoji: '🏮', type: 'decor', decor: 'lantern', price: 140, xp: 8, desc: 'Uma luz quentinha para o quarto à noite.' },
+    { id: 'bookshelf', name: 'Estante de livros', emoji: '📚', type: 'decor', decor: 'library', price: 220, xp: 12, desc: 'Histórias e conforto em cada prateleira.' }
   ];
 
   var QUESTS = [
@@ -336,7 +364,9 @@
     { id: 'perfume', name: 'Perfume', emoji: '🌸', ingredients: { soap: 1, apple: 1, milk: 1 }, result: 'perfume', amount: 1, xp: 12, desc: 'Higiene e humor em um frasco.' },
     { id: 'rug', name: 'Tapete feliz', emoji: '🧶', ingredients: { ball: 1, brush: 2 }, result: 'rug', amount: 1, xp: 14, desc: 'Decora o quarto com estilo.' },
     { id: 'musicbox', name: 'Caixa de música', emoji: '🎵', ingredients: { ball: 1, piano: 1 }, result: 'musicbox', amount: 1, xp: 18, desc: 'Une brincadeira e música.' },
-    { id: 'elixir', name: 'Elixir da vida', emoji: '🧪', ingredients: { medicine: 1, milk: 2, energy: 1 }, result: 'elixir', amount: 1, xp: 30, desc: 'Reanima um bichinho crítico.' }
+    { id: 'elixir', name: 'Elixir da vida', emoji: '🧪', ingredients: { medicine: 1, milk: 2, energy: 1 }, result: 'elixir', amount: 1, xp: 30, desc: 'Reanima um bichinho crítico.' },
+    { id: 'bubbleRecipe', name: 'Chá com bolhas', emoji: '🧋', ingredients: { milk: 1, juice: 1, cookie: 1 }, result: 'bubbletea', amount: 2, xp: 16, desc: 'Um refresco doce feito em casa.' },
+    { id: 'kiteRecipe', name: 'Pipeta colorida', emoji: '🪁', ingredients: { ball: 1, brush: 1, carrot: 1 }, result: 'kite', amount: 1, xp: 14, desc: 'Junta papel, linha e muita diversão.' }
   ];
 
   var BUFFS = {
@@ -417,6 +447,7 @@
   }
 
   global.TamaData = {
+    VERSION: 'v39',
     STAGES: STAGES,
     SPECIES: SPECIES,
     PERSONALITIES: PERSONALITIES,

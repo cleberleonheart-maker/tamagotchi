@@ -31,13 +31,19 @@ function test(name, fn) {
 }
 
 test('catálogo possui espécies, itens, fases e conquistas', () => {
-  assert.equal(D.SPECIES.length, 6);
+  assert.equal(D.SPECIES.length, 8);
   assert.equal(D.STAGES.length, 6);
   assert.ok(D.ITEMS.length >= 15);
   assert.ok(D.ACHIEVEMENTS.length >= 15);
   assert.equal(D.WALKS.length, 4);
   assert.equal(D.ENEMIES.length, 4);
   assert.equal(D.item('apple').name, 'Maçã');
+  assert.ok(D.species('panda').names.length === D.STAGES.length);
+  assert.ok(D.species('nuvem').colors.length === 3);
+  assert.ok(D.item('bubbletea'));
+  assert.ok(D.item('kite'));
+  assert.ok(D.item('headphones'));
+  assert.ok(D.item('bookshelf'));
 });
 
 test('adoção cria ovo com atributos iniciais', () => {
@@ -427,6 +433,20 @@ test('catálogo possui receitas, tutorial e novas conquistas', () => {
   assert.ok(D.ACHIEVEMENTS.length >= 20);
   assert.ok(D.ACHIEVEMENTS.some((item) => item.id === 'streak_7'));
   assert.ok(D.ACHIEVEMENTS.some((item) => item.id === 'crafter'));
+});
+
+test('novas receitas e itens entram no inventário e podem ser usados', () => {
+  const state = fresh();
+  Object.assign(state.inventory, { milk: 2, juice: 2, cookie: 2 });
+  const crafted = E.craft(state, 'bubbleRecipe');
+  assert.equal(crafted.ok, true);
+  assert.ok(state.inventory.bubbletea >= 2);
+  const pet = E.activePet(state);
+  pet.happiness = 10;
+  const used = E.useItem(state, 'bubbletea');
+  assert.equal(used.ok, true);
+  assert.ok(pet.happiness > 10);
+  assert.ok(D.RECIPES.some((recipe) => recipe.id === 'kiteRecipe'));
 });
 
 test('configurações de acessibilidade e tutorial sobrevivem ao save', () => {

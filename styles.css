@@ -125,6 +125,7 @@ h2 { font-size: 1.02rem; letter-spacing: .01em; }
 }
 .icon-btn[hidden] { display: none !important; }
 .icon-btn:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+.icon-btn.has-update { border-color: var(--yellow); background: rgba(255, 205, 90, .18); box-shadow: 0 0 0 2px rgba(255, 205, 90, .22); }
 
 .update-banner {
   display: flex;
@@ -864,6 +865,10 @@ body[data-theme='day'] .field input, body[data-theme='day'] .field textarea, bod
 .sprite[data-species='urso'] .ear { width: 34px; height: 34px; top: -8px; border-radius: 50%; clip-path: none; background: var(--c3); }
 .sprite[data-species='urso'] .ear.left { left: 8px; }
 .sprite[data-species='urso'] .ear.right { right: 8px; }
+.sprite[data-species='panda'] .ear { width: 30px; height: 30px; top: -10px; border-radius: 50%; clip-path: none; background: var(--c2); }
+.sprite[data-species='panda'] .ear.left { left: 10px; }
+.sprite[data-species='panda'] .ear.right { right: 10px; }
+.sprite[data-species='nuvem'] .ear { clip-path: polygon(50% 0, 100% 100%, 0 100%); background: linear-gradient(var(--c1), var(--c2)); }
 .sprite .sweat { display: none; position: absolute; top: 44px; right: -10px; font-size: 1rem; z-index: 5; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .25)); }
 .sprite[data-illness='1'] .sweat { display: block; animation: sweatDrop 1.5s ease-in-out infinite; }
 .sprite .accessory-glow { display: none; position: absolute; top: -30px; left: 50%; transform: translateX(-50%); font-size: .8rem; color: var(--yellow); letter-spacing: 5px; white-space: nowrap; animation: twinkle 1.8s infinite alternate; z-index: 4; text-shadow: 0 0 8px var(--yellow); }
@@ -879,6 +884,12 @@ body[data-theme='day'] .field input, body[data-theme='day'] .field textarea, bod
 #screen[data-decor='space'] .sky::after { content: '✦　·　✧　·　✦　·　✧'; position: absolute; top: 74px; left: 18px; right: 12px; font-size: .8rem; color: #fff3bd; letter-spacing: 3px; opacity: .8; animation: twinkle 2s infinite alternate; }
 #screen[data-decor='space'] .room::before { background: linear-gradient(180deg, rgba(90, 60, 180, .18), rgba(25, 12, 70, .8)); }
 #screen[data-decor='space'] .window { border-color: rgba(255, 220, 150, .55); box-shadow: 0 0 24px rgba(180, 130, 255, .4); }
+#screen[data-decor='lantern'] .window { border-color: rgba(255, 170, 110, .65); box-shadow: 0 0 22px rgba(255, 140, 70, .45); }
+#screen[data-decor='lantern'] .toy-corner::after { content: '🏮'; position: absolute; right: 18px; bottom: 2px; font-size: 1.3rem; }
+#screen[data-decor='lantern'] .toy-corner { position: relative; }
+#screen[data-decor='library'] .room::before { background: linear-gradient(180deg, rgba(150, 100, 60, .18), rgba(70, 40, 25, .7)); }
+#screen[data-decor='library'] .toy-corner::after { content: '📚'; position: absolute; left: 20px; bottom: 0; font-size: 1.3rem; }
+#screen[data-decor='library'] .toy-corner { position: relative; }
 
 .daily-event { display: flex; align-items: center; gap: 10px; margin: 10px 0; padding: 10px; border-radius: 12px; border: 1px solid var(--border-strong); background: linear-gradient(135deg, rgba(139, 107, 255, .18), rgba(255, 123, 184, .12)); }
 .daily-event > span { font-size: 1.7rem; line-height: 1; }

@@ -23,11 +23,20 @@
 
   function persist() { E.save(state); }
 
+  function syncUpdateButton(available) {
+    var button = document.getElementById('updateBtn');
+    if (!button) return;
+    button.classList.toggle('has-update', available);
+    button.title = available ? 'Atualização disponível' : 'Verificar atualização';
+    button.setAttribute('aria-label', button.title);
+  }
+
   function showUpdateAvailable(worker) {
     if (!worker || pendingUpdateWorker === worker) return;
     pendingUpdateWorker = worker;
     var banner = document.getElementById('updateBanner');
     if (banner) banner.hidden = false;
+    syncUpdateButton(true);
     UI.toast('Nova versão disponível. Toque em “Atualizar agora”.', 'good');
   }
 
@@ -35,6 +44,7 @@
     pendingUpdateWorker = null;
     var banner = document.getElementById('updateBanner');
     if (banner) banner.hidden = true;
+    syncUpdateButton(false);
   }
 
   function applyUpdate() {
@@ -70,6 +80,13 @@
     }).finally(function () {
       if (button) { button.disabled = false; button.textContent = '⬆️ Verificar atualização'; }
     });
+  }
+
+  function checkUpdateQuietly() {
+    if (document.visibilityState !== 'visible' || !('serviceWorker' in navigator) || !navigator.serviceWorker.getRegistration) return;
+    navigator.serviceWorker.getRegistration().then(function (registration) {
+      if (registration) return registration.update();
+    }).catch(function () { /* noop */ });
   }
 
   function statsOf(pet) {
@@ -1046,6 +1063,8 @@
       UI.toast(state.settings.sound ? 'Som ativado 🔊' : 'Som desativado 🔇', 'info');
     });
     document.getElementById('settingsBtn').addEventListener('click', function () { perform('settings'); });
+    var updateBtn = document.getElementById('updateBtn');
+    if (updateBtn) updateBtn.addEventListener('click', function () { A.play('click'); manualUpdateCheck(null); });
     var updateApplyBtn = document.getElementById('updateApplyBtn');
     if (updateApplyBtn) updateApplyBtn.addEventListener('click', applyUpdate);
     var updateLaterBtn = document.getElementById('updateLaterBtn');
@@ -1106,10 +1125,13 @@
         onTick();
         UI.updateLive(state);
         persist();
+        checkUpdateQuietly();
       } else {
         persist();
       }
     });
+    global.addEventListener('pageshow', checkUpdateQuietly);
+    setInterval(checkUpdateQuietly, 10 * 60 * 1000);
     global.addEventListener('beforeunload', persist);
 
     if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
@@ -1129,6 +1151,7 @@
           refreshingAfterUpdate = true;
           window.location.reload();
         });
+        checkUpdateQuietly();
       }).catch(function () { /* noop */ });
     }
 

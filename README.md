@@ -1,6 +1,6 @@
 # TamaVida 🐾
 
-Tamagotchi completo em PWA (HTML, CSS e JavaScript puro), com cuidados em tempo real, evolução, economia, conquistas, minigames, missões diárias, sequência semanal, horta, cozinha com buffs, ranking local, mercado de trocas, cartão compartilhável, oficina, tutorial, acessibilidade avançada, estatísticas, aniversários, modo foco, álbum de figurinhas, ofertas diárias, diário ilustrado, eventos, doenças, decoração, sons do clima e salvamento offline.
+Tamagotchi completo em PWA (HTML, CSS e JavaScript puro), com cuidados em tempo real, evolução, economia, conquistas, minigames, missões diárias, sequência semanal, horta, cozinha com buffs, ranking local, mercado de trocas, cartão compartilhável, oficina, tutorial, acessibilidade avançada, estatísticas, aniversários, modo foco, álbum de figurinhas, ofertas diárias, diário ilustrado, eventos, doenças, decoração, sons do clima, atualização pelo navegador e salvamento offline.
 
 ## Como executar
 
@@ -10,11 +10,11 @@ Basta abrir `index.html` no navegador. Para instalar como aplicativo (PWA) e ati
 python3 -m http.server 8080
 ```
 
-Acesse `http://localhost:8080`, clique no botão **Instalar aplicativo** do navegador (quando disponível) e pronto.
+Acesse `http://localhost:8080`, clique no botão **Instalar aplicativo** do navegador (quando disponível) e pronto. No celular, use a versão publicada em `https://cleberleonheart-maker.github.io/tamagotchi/`. Quando houver nova versão, o botão ⬆️ do topo fica destacado e uma faixa oferece **Atualizar agora**; a versão atual aparece em Configurações e na Ajuda.
 
 ## Recursos
 
-- **6 espécies** com características, paletas e nomes diferentes por fase.
+- **8 espécies** com características, paletas e nomes diferentes por fase.
 - **6 fases de evolução**: ovo → bebê → criança → adolescente → adulto → idoso. A evolução exige idade **e** cuidados.
 - **6 atributos** que decaem com o tempo: fome, felicidade, energia, higiene, saúde e disciplina. A **qualidade dos cuidados** define quanto de "carinho" cada ação entrega.
 - **Ações**: alimentar, brincar, banho, decorar, dormir, treinar, carinho, conversar, cuidados médicos e reviver.
@@ -28,7 +28,7 @@ Acesse `http://localhost:8080`, clique no botão **Instalar aplicativo** do nave
 - **Foco com tarefa**: nomeie a sessão; ao concluir ela vira memória no diário e conta minutos focados do dia.
 - **Eventos do dia**: feira, chuva, festival, lua cheia e neve alteram comida, higiene, energia, sono e moedas dos minigames. Em dias chuvosos chovem gotas na tela e batalhas causam 15% menos dano; em dias nevados caem flocos, a energia gasta 30% mais rápido e passeios rendem 25% menos, mas acessórios de frio reduzem esse gasto e aparecem no sprite (respeitando "reduzir movimento"). O painel de desafios traz uma missão climática por dia e a previsão dos próximos 3 dias.
 - **Visuais de evento**: o cenário ganha decorações e brilho próprios para feira, chuva, festival, lua cheia e neve, com aura de humor no sprite, balões de fala com cauda, plantas da horta em estágios de crescimento e pódio no ranking.
-- **Economia**: moedas, loja com 30 itens, 3 ofertas diárias com desconto e estoque limitado, venda de itens, recompensas por nível/evolução/minigames/missões/foco. Compras pedem confirmação e mostram o saldo restante; o elixir exibe o nome do bichinho antes de reanimar.
+- **Economia**: moedas, loja com 47 itens, 3 ofertas diárias com desconto e estoque limitado, venda de itens, recompensas por nível/evolução/minigames/missões/foco. Compras pedem confirmação e mostram o saldo restante; o elixir exibe o nome do bichinho antes de reanimar.
 - **Inventário filtrável**: chips rápidos por comida, cuidado, brinquedos, acessórios e decoração.
 - **4 minigames**: Pega comida, Tap Tap, Memória e Pesca do clima (pontuação → moedas + XP; a pesca também rende peixes), todos jogáveis por teclado.
 - **30 conquistas** que rendem +50 moedas cada.
@@ -39,11 +39,11 @@ Acesse `http://localhost:8080`, clique no botão **Instalar aplicativo** do nave
 - **Mercado de trocas**: use pó de figurinha e duplicatas do álbum para pegar cenouras, energéticos, bolos ou elixires sem perder figurinhas únicas.
 - **Cartão compartilhável**: exporte um PNG com espécie, fase, nível, humor, streak, moedas, conquistas e figurinhas.
 - **Ranking semanal local**: pontos por alimentar, banhos, minigames, passeios, batalhas, foco e check-ins, com categoria líder, faixa de rank e recordes que permanecem entre semanas.
-- **Oficina**: 6 receitas para combinar itens do inventário (bolo, bandagem, perfume, tapete, caixa de música e elixir) e ganhar XP.
+- **Oficina**: 8 receitas para combinar itens do inventário (bolo, bandagem, perfume, tapete, caixa de música, elixir, chá com bolhas e pipeta colorida) e ganhar XP.
 - **Tutorial interativo** de 5 passos no primeiro acesso, com dicas contextuais e opção de rever quando quiser.
 - **Aniversário do bichinho**: no dia da adoção (uma vez por ano) ele ganha bolo, moedas, felicidade e uma comemoração.
 - **Modo foco Pomodoro**: sessões de 25/15 minutos e pausas de 5 minutos, com timer persistente, moedas e XP ao concluir.
-- **Álbum de figurinhas**: 36 figurinhas por espécie/fase, duplicatas viram pó e 3 pó trocam por uma figurinha que falta. O pó e as repetições também alimentam o mercado de trocas.
+- **Álbum de figurinhas**: 48 figurinhas por espécie/fase, duplicatas viram pó e 3 pó trocam por uma figurinha que falta. O pó e as repetições também alimentam o mercado de trocas.
 - **Aventura**: 4 passeios (parque, floresta, praia e cidade) com custo de energia, moedas, XP e itens; e 4 batalhas RPG por turnos (atacar, defender, usar item, fugir; atalhos 1-4) com chefes, derrotas críticas e recompensas. O clima do dia reduz recompensas de passeio na neve e dano em batalha na chuva.
 - **Até 4 bichinhos** simultâneos, com troca rápida pelo painel lateral.
 - **Estado crítico e revive**: se a saúde chegar a zero, use um Elixir da vida para trazer o bichinho de volta.
@@ -96,7 +96,7 @@ npm test
 node tests/engine.test.js
 ```
 
-Suíte atual: 71 testes cobrindo tempo, evolução, economia, itens, troca de acessórios, elixir protegido, missões diárias/semanais e climáticas, check-in diário, calendário de cuidados, lembretes, foco com tarefa, personalidade, caminhos adultos, visitantes, streak, oficina, cozinha, buffs, mercado de trocas, pesca, estatísticas, acessibilidade, aniversário, figurinhas, ofertas, momentos, passeios, batalhas, doenças, decoração, slots, sanitização, eventos climáticos, acessórios de frio, efeitos do clima em aventuras, tema dia/noite automático, horta, rotina e ranking semanal.
+Suíte atual: 72 testes cobrindo tempo, evolução, economia, itens, troca de acessórios, elixir protegido, missões diárias/semanais e climáticas, check-in diário, calendário de cuidados, lembretes, foco com tarefa, personalidade, caminhos adultos, visitantes, streak, oficina, cozinha, buffs, mercado de trocas, pesca, estatísticas, acessibilidade, aniversário, figurinhas, ofertas, momentos, passeios, batalhas, doenças, decoração, slots, sanitização, eventos climáticos, acessórios de frio, efeitos do clima em aventuras, tema dia/noite automático, horta, rotina, ranking semanal e conteúdo novo (espécies, itens e receitas).
 
 ## Salvamento
 
