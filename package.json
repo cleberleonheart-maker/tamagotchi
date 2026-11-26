@@ -4,7 +4,8 @@
   "private": true,
   "description": "Tamagotchi completo em PWA com evolução, aniversário, foco, figurinhas, ofertas, passeios, batalhas RPG, diário ilustrado, missões, streak, oficina, acessibilidade e funcionamento offline.",
   "scripts": {
-    "test": "node tests/engine.test.js",
+    "test": "node tests/engine.test.js && node tests/pwa.test.js",
+    "check": "node --check js/data.js && node --check js/audio.js && node --check js/engine.js && node --check js/games.js && node --check js/ui.js && node --check js/app.js && node --check service-worker.js && node --check tests/engine.test.js && node --check tests/pwa.test.js",
     "start": "python3 -m http.server 8080"
   }
 }

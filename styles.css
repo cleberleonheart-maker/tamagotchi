@@ -905,6 +905,9 @@ body[data-theme='day'] .field input, body[data-theme='day'] .field textarea, bod
 #screen[data-decor='garden'] .room::before { background: linear-gradient(180deg, rgba(90, 180, 110, .18), rgba(30, 80, 50, .65)); }
 #screen[data-decor='garden'] .toy-corner::after { content: '🪴'; position: absolute; right: 20px; bottom: 0; font-size: 1.3rem; }
 #screen[data-decor='garden'] .toy-corner { position: relative; }
+#screen[data-decor='seashell'] .room::before { background: linear-gradient(180deg, rgba(110, 210, 240, .18), rgba(35, 95, 140, .68)); }
+#screen[data-decor='seashell'] .toy-corner::after { content: '🐚'; position: absolute; right: 22px; bottom: 0; font-size: 1.3rem; }
+#screen[data-decor='seashell'] .toy-corner { position: relative; }
 
 .daily-event { display: flex; align-items: center; gap: 10px; margin: 10px 0; padding: 10px; border-radius: 12px; border: 1px solid var(--border-strong); background: linear-gradient(135deg, rgba(139, 107, 255, .18), rgba(255, 123, 184, .12)); }
 .daily-event > span { font-size: 1.7rem; line-height: 1; }
@@ -1085,7 +1088,19 @@ body[data-font='large'] {
 body[data-font='large'] .muted,
 body[data-font='large'] small,
 body[data-font='large'] .stat-label,
-body[data-font='large'] .goal-title span {
+body[data-font='large'] .goal-title span,
+body[data-font='large'] .day-pill,
+body[data-font='large'] .speed-pill,
+body[data-font='large'] .pet-chip,
+body[data-font='large'] .device-sub,
+body[data-font='large'] .action-btn span:last-child,
+body[data-font='large'] .tab,
+body[data-font='large'] .game-row b,
+body[data-font='large'] .game-row small,
+body[data-font='large'] .item-card small,
+body[data-font='large'] .deal-card small,
+body[data-font='large'] .shop-search,
+body[data-font='large'] .modal-sub {
   font-size: .92rem;
 }
 

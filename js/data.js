@@ -100,6 +100,24 @@
       rate: { hunger: 1.15, happiness: 1.1, energy: 1.05, hygiene: 0.9 },
       names: ['Ovo de raposa', 'Raposinha', 'Raposa esperta', 'Raposa jovem', 'Raposa elegante', 'Raposa lendária'],
       description: 'Esperta e brincalhona. Adora passeios e pequenas surpresas.'
+    },
+    {
+      id: 'coala',
+      name: 'Coalinha',
+      emoji: '🐨',
+      colors: ['#c6d2d8', '#8fa3ad', '#b7c98a'],
+      rate: { hunger: 0.95, happiness: 1.05, energy: 1.15, hygiene: 1.05 },
+      names: ['Ovo de coala', 'Coalinha', 'Coala tranquilo', 'Coala jovem', 'Coala elegante', 'Coala sábio'],
+      description: 'Dorminhoca e carinhosa. Passa o dia abraçada ao seu bambu.'
+    },
+    {
+      id: 'baleia',
+      name: 'Baleia',
+      emoji: '🐳',
+      colors: ['#8fd8ff', '#4aa3dd', '#d7f3ff'],
+      rate: { hunger: 1.2, happiness: 1.1, energy: 0.9, hygiene: 0.95 },
+      names: ['Ovo de baleia', 'Baleia pequena', 'Baleia curiosa', 'Baleia jovem', 'Baleia majestosa', 'Baleia anciã'],
+      description: 'Grande e gentil. Nada devagar, mas enche o quarto de alegria.'
     }
   ];
 
@@ -157,7 +175,11 @@
     { id: 'towel', name: 'Toalha quente', emoji: '🧺', type: 'care', price: 36, hygiene: 34, happiness: 6, xp: 7, desc: 'Seca e aqueca depois do banho.' },
     { id: 'yoyo', name: 'Ioiô colorido', emoji: '🪀', type: 'toy', price: 65, happiness: 28, discipline: 8, xp: 10, desc: 'Brincadeira simples que exercita a paciência.' },
     { id: 'bow', name: 'Laço de festa', emoji: '🎀', type: 'accessory', price: 170, bonus: { happiness: 0.12, hygiene: 0.06 }, desc: 'Charme extra com menos tristeza e sujeira.' },
-    { id: 'terrarium', name: 'Mini jardim', emoji: '🪴', type: 'decor', decor: 'garden', price: 200, xp: 11, desc: 'Um cantinho verde dentro de casa.' }
+    { id: 'terrarium', name: 'Mini jardim', emoji: '🪴', type: 'decor', decor: 'garden', price: 200, xp: 11, desc: 'Um cantinho verde dentro de casa.' },
+    { id: 'bamboo', name: 'Broto de bambu', emoji: '🎋', type: 'food', price: 96, hunger: 34, happiness: 8, weight: 2, xp: 13, desc: 'Crocante e leve. O lanche favorito da Coalinha.' },
+    { id: 'compass', name: 'Bússola', emoji: '🧭', type: 'toy', price: 90, happiness: 26, discipline: 12, xp: 13, desc: 'Brincadeira que desperta o espírito explorador.' },
+    { id: 'bell', name: 'Sininho', emoji: '🔔', type: 'accessory', price: 180, bonus: { happiness: 0.1, energy: 0.06 }, desc: 'Um som alegre que anima e cansa menos.' },
+    { id: 'shell', name: 'Concha brilhante', emoji: '🐚', type: 'decor', decor: 'seashell', price: 210, xp: 12, desc: 'Um brilho do mar para enfeitar o quarto.' }
   ];
 
   var QUESTS = [
@@ -169,7 +191,8 @@
     { id: 'pet5', key: 'pet', target: 5, reward: 40, emoji: '🤗', name: 'Faça 5 carinhos' },
     { id: 'earn150', key: 'earn', target: 150, reward: 70, emoji: '🪙', name: 'Ganhe 150 moedas' },
     { id: 'walks2', key: 'walk', target: 2, reward: 65, emoji: '🌳', name: 'Vá passear 2 vezes' },
-    { id: 'battles2', key: 'battle', target: 2, reward: 75, emoji: '⚔️', name: 'Enfrente 2 batalhas' }
+    { id: 'battles2', key: 'battle', target: 2, reward: 75, emoji: '⚔️', name: 'Enfrente 2 batalhas' },
+    { id: 'focus15', key: 'focus', target: 15, reward: 70, emoji: '⏱️', name: 'Foque por 15 minutos' }
   ];
 
   var WEATHER_QUESTS = {
@@ -205,7 +228,8 @@
     { id: 'wtrain7', key: 'train', target: 7, reward: 200, emoji: '💪', name: 'Treinos da semana' },
     { id: 'wpet15', key: 'pet', target: 15, reward: 160, emoji: '🤗', name: 'Carinhos da semana' },
     { id: 'wwalk5', key: 'walk', target: 5, reward: 210, emoji: '🌳', name: 'Passeios da semana' },
-    { id: 'wbattle5', key: 'battle', target: 5, reward: 230, emoji: '⚔️', name: 'Batalhas da semana' }
+    { id: 'wbattle5', key: 'battle', target: 5, reward: 230, emoji: '⚔️', name: 'Batalhas da semana' },
+    { id: 'wfocus60', key: 'focus', target: 60, reward: 220, emoji: '🧠', name: 'Hora de foco na semana' }
   ];
 
   var PERSONALITIES = [
@@ -352,7 +376,11 @@
     { id: 'battle_10', name: 'Aventureiro', emoji: '⚔️', desc: 'Enfrente 10 batalhas.' },
     { id: 'boss', name: 'Campeão do reino', emoji: '🗿', desc: 'Derrote o golem de pedra.' },
     { id: 'path_chosen', name: 'Destino traçado', emoji: '🌟', desc: 'Escolha o caminho do seu bichinho na fase adulta.' },
-    { id: 'visitor_1', name: 'Boa visita', emoji: '🎁', desc: 'Receba a visita de um amigo.' }
+    { id: 'visitor_1', name: 'Boa visita', emoji: '🎁', desc: 'Receba a visita de um amigo.' },
+    { id: 'fish_10', name: 'Pescador', emoji: '🎣', desc: 'Pesque 10 peixes.' },
+    { id: 'checkin_7', name: 'Sete presentes', emoji: '🎁', desc: 'Faça check-in por 7 dias.' },
+    { id: 'harvest_10', name: 'Horta produtiva', emoji: '🌾', desc: 'Colha 10 vezes na horta.' },
+    { id: 'visitor_3', name: 'Casa cheia', emoji: '🏡', desc: 'Receba 3 visitas de amigos.' }
   ];
 
   var MOODS = [
@@ -393,8 +421,14 @@
     { id: 'bubbleRecipe', name: 'Chá com bolhas', emoji: '🧋', ingredients: { milk: 1, juice: 1, cookie: 1 }, result: 'bubbletea', amount: 2, xp: 16, desc: 'Um refresco doce feito em casa.' },
     { id: 'kiteRecipe', name: 'Pipeta colorida', emoji: '🪁', ingredients: { ball: 1, brush: 1, carrot: 1 }, result: 'kite', amount: 1, xp: 14, desc: 'Junta papel, linha e muita diversão.' },
     { id: 'melonRecipe', name: 'Salada de melão', emoji: '🍈', ingredients: { apple: 1, milk: 1, carrot: 1 }, result: 'melon', amount: 2, xp: 18, desc: 'Um lanche fresco feito com a horta.' },
-    { id: 'bowRecipe', name: 'Laço artesanal', emoji: '🎀', ingredients: { ball: 1, brush: 1, cookie: 1 }, result: 'bow', amount: 1, xp: 16, desc: 'Um enfeite novo para o bichinho.' }
+    { id: 'bowRecipe', name: 'Laço artesanal', emoji: '🎀', ingredients: { ball: 1, brush: 1, cookie: 1 }, result: 'bow', amount: 1, xp: 16, desc: 'Um enfeite novo para o bichinho.' },
+    { id: 'vitaminRecipe', name: 'Vitamina caseira', emoji: '🍊', ingredients: { apple: 1, milk: 1, carrot: 1 }, result: 'vitamin', amount: 2, xp: 14, desc: 'Um reforço de saúde feito na oficina.' },
+    { id: 'bambooRecipe', name: 'Salada de bambu', emoji: '🎋', ingredients: { carrot: 2, melon: 1 }, result: 'bamboo', amount: 2, xp: 17, desc: 'Fresquinha e cheia de energia.' },
+    { id: 'bellRecipe', name: 'Sininho artesanal', emoji: '🔔', ingredients: { musicbox: 1, bow: 1, cookie: 1 }, result: 'bell', amount: 1, xp: 18, desc: 'Música e festa em um só acessório.' },
+    { id: 'shellRecipe', name: 'Concha polida', emoji: '🐚', ingredients: { soap: 2, brush: 1, melon: 1 }, result: 'shell', amount: 1, xp: 20, desc: 'Uma lembrança do mar para o quarto.' }
   ];
+
+  var BATTLE_HEALS = { medicine: 35, bandage: 25, milk: 20, apple: 14, vitamin: 22 };
 
   var BUFFS = {
     soup: { name: 'Sopa da horta', emoji: '🍲', minutes: 30, desc: 'A fome diminui 25% mais devagar.' },
@@ -431,7 +465,8 @@
     { id: 'forest', name: 'Floresta', emoji: '🌲', desc: 'Trilhas sombrias com cogumelos e surpresas.', cost: 12, minLevel: 3, coins: [8, 16], xp: [8, 14], loot: ['milk', 'carrot', 'soap'], hint: 'Médio • 12 ⚡' },
     { id: 'beach', name: 'Praia', emoji: '🏖️', desc: 'Areia, conchas e um mergulho revigorante.', cost: 16, minLevel: 5, coins: [12, 22], xp: [12, 20], loot: ['sushi', 'cake', 'perfume'], hint: 'Médio • 16 ⚡' },
     { id: 'city', name: 'Cidade', emoji: '🏙️', desc: 'Vitrines, praças e o cheiro de padaria.', cost: 20, minLevel: 8, coins: [18, 30], xp: [18, 28], loot: ['cake', 'piano', 'musicbox'], hint: 'Difícil • 20 ⚡' },
-    { id: 'botanic', name: 'Jardim botânico', emoji: '🌷', desc: 'Estufas, borboletas e um cheiro de terra molhada.', cost: 18, minLevel: 6, coins: [14, 24], xp: [14, 22], loot: ['melon', 'icecream', 'towel'], hint: 'Médio • 18 ⚡' }
+    { id: 'botanic', name: 'Jardim botânico', emoji: '🌷', desc: 'Estufas, borboletas e um cheiro de terra molhada.', cost: 18, minLevel: 6, coins: [14, 24], xp: [14, 22], loot: ['melon', 'icecream', 'towel'], hint: 'Médio • 18 ⚡' },
+    { id: 'mountain', name: 'Montanha', emoji: '🏔️', desc: 'Ar puro, trilhas íngremes e vistas que valem o esforço.', cost: 24, minLevel: 10, coins: [22, 36], xp: [22, 34], loot: ['bamboo', 'compass', 'bell'], hint: 'Difícil • 24 ⚡' }
   ];
 
   var ENEMIES = [
@@ -439,7 +474,8 @@
     { id: 'rato', name: 'Rato fominha', emoji: '🐀', desc: 'Rápido e faminto. Cuidado com a mordida!', hp: 26, atk: 6, def: 2, coins: 12, xp: 12, minLevel: 3, loot: 'carrot' },
     { id: 'morcego', name: 'Morcego', emoji: '🦇', desc: 'Ataca no escuro e desvia com facilidade.', hp: 34, atk: 8, def: 3, coins: 17, xp: 17, minLevel: 5, loot: 'medicine' },
     { id: 'raposinha', name: 'Raposa travessa', emoji: '🦊', desc: 'Rápida e esperta. Tenta roubar seu laço!', hp: 40, atk: 9, def: 4, coins: 22, xp: 22, minLevel: 6, loot: 'bow' },
-    { id: 'golem', name: 'Golem de pedra', emoji: '🗿', desc: 'Lento, mas muito resistente. O chefe da floresta!', hp: 48, atk: 11, def: 5, coins: 28, xp: 30, minLevel: 8, loot: 'elixir', boss: true }
+    { id: 'golem', name: 'Golem de pedra', emoji: '🗿', desc: 'Lento, mas muito resistente. O chefe da floresta!', hp: 48, atk: 11, def: 5, coins: 28, xp: 30, minLevel: 8, loot: 'elixir', boss: true },
+    { id: 'lobo', name: 'Lobo da montanha', emoji: '🐺', desc: 'Ágil e teimoso. Guarda as trilhas mais altas.', hp: 56, atk: 13, def: 6, coins: 36, xp: 38, minLevel: 10, loot: 'compass' }
   ];
 
   function stickerKey(speciesId, stageIndex) {
@@ -480,6 +516,16 @@
 
   var CHANGES = [
     {
+      version: 'v42',
+      title: 'Novas descobertas e cuidados',
+      items: [
+        'Duas espécies novas: Coalinha e Baleia, com figurinhas para todas as fases.',
+        'Quatro itens, quatro receitas, um passeio e um inimigo inéditos.',
+        'Vitamina agora pode ser craftada e usada em batalhas; foco conta nas missões diárias e semanais.',
+        'Quatro conquistas novas para pesca, check-in, horta e visitas; dicas e tutorial mais claros.'
+      ]
+    },
+    {
       version: 'v41',
       title: 'Correções de robustez',
       items: [
@@ -518,7 +564,7 @@
   ];
 
   global.TamaData = {
-    VERSION: 'v41',
+    VERSION: 'v42',
     CHANGES: CHANGES,
     STAGES: STAGES,
     SPECIES: SPECIES,
@@ -533,6 +579,7 @@
     WEEKLY_QUESTS: WEEKLY_QUESTS,
     EVENTS: EVENTS,
     RECIPES: RECIPES,
+    BATTLE_HEALS: BATTLE_HEALS,
     BUFFS: BUFFS,
     DISHES: DISHES,
     TRADES: TRADES,

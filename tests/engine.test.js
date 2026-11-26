@@ -31,12 +31,12 @@ function test(name, fn) {
 }
 
 test('catálogo possui espécies, itens, fases e conquistas', () => {
-  assert.equal(D.SPECIES.length, 10);
+  assert.equal(D.SPECIES.length, 12);
   assert.equal(D.STAGES.length, 6);
-  assert.ok(D.ITEMS.length >= 54);
-  assert.ok(D.ACHIEVEMENTS.length >= 15);
-  assert.equal(D.WALKS.length, 5);
-  assert.equal(D.ENEMIES.length, 5);
+  assert.ok(D.ITEMS.length >= 58);
+  assert.ok(D.ACHIEVEMENTS.length >= 34);
+  assert.equal(D.WALKS.length, 6);
+  assert.equal(D.ENEMIES.length, 6);
   assert.equal(D.item('apple').name, 'Maçã');
   assert.ok(D.species('panda').names.length === D.STAGES.length);
   assert.ok(D.species('nuvem').colors.length === 3);
@@ -53,6 +53,12 @@ test('catálogo possui espécies, itens, fases e conquistas', () => {
   assert.ok(D.item('yoyo'));
   assert.ok(D.item('bow'));
   assert.ok(D.item('terrarium'));
+  assert.ok(D.item('bamboo'));
+  assert.ok(D.item('compass'));
+  assert.ok(D.item('bell'));
+  assert.ok(D.item('shell'));
+  assert.ok(D.species('coala').names.length === D.STAGES.length);
+  assert.ok(D.species('baleia').colors.length === 3);
 });
 
 test('adoção cria ovo com atributos iniciais', () => {
@@ -485,15 +491,53 @@ test('novas receitas e itens entram no inventário e podem ser usados', () => {
   assert.ok(D.RECIPES.some((recipe) => recipe.id === 'kiteRecipe'));
 });
 
-test('conteúdo das versões 40 e 41 está disponível', () => {
+test('conteúdo das versões 40, 41 e 42 está disponível', () => {
   assert.ok(D.RECIPES.some((recipe) => recipe.id === 'melonRecipe'));
   assert.ok(D.RECIPES.some((recipe) => recipe.id === 'bowRecipe'));
   assert.ok(D.DISHES.some((dish) => dish.id === 'sorbetDish'));
   assert.ok(D.BUFFS.sorbet);
   assert.ok(D.TRADES.some((trade) => trade.id === 'tradeBow'));
   assert.ok(D.WALKS.some((walk) => walk.id === 'botanic'));
+  assert.ok(D.WALKS.some((walk) => walk.id === 'mountain'));
   assert.ok(D.ENEMIES.some((enemy) => enemy.id === 'raposinha'));
+  assert.ok(D.ENEMIES.some((enemy) => enemy.id === 'lobo'));
+  assert.ok(D.RECIPES.some((recipe) => recipe.id === 'vitaminRecipe'));
+  assert.ok(D.RECIPES.some((recipe) => recipe.id === 'shellRecipe'));
+  assert.ok(D.BATTLE_HEALS.vitamin > 0);
+  assert.ok(['fish_10', 'checkin_7', 'harvest_10', 'visitor_3'].every((id) => D.ACHIEVEMENTS.some((achievement) => achievement.id === id)));
+  assert.ok(D.QUESTS.some((quest) => quest.id === 'focus15'));
+  assert.ok(D.WEEKLY_QUESTS.some((quest) => quest.id === 'wfocus60'));
   assert.ok(D.CHANGES.some((change) => change.version === D.VERSION));
+});
+
+test('conquistas de sistemas já existentes são reconhecidas', () => {
+  const state = fresh();
+  state.totals.fished = 10;
+  state.totals.checkins = 7;
+  state.totals.visits = 3;
+  state.garden.harvested = 10;
+  const unlocked = E.checkAchievements(state, E.activePet(state));
+  assert.ok(unlocked.includes('fish_10'));
+  assert.ok(unlocked.includes('checkin_7'));
+  assert.ok(unlocked.includes('harvest_10'));
+  assert.ok(unlocked.includes('visitor_3'));
+});
+
+test('dicas contextuais e rolagem respeitam o estado', () => {
+  const state = fresh();
+  const pet = E.activePet(state);
+  Object.assign(pet, { hunger: 10, happiness: 90, energy: 90, hygiene: 90, health: 90 });
+  assert.equal(U.tipForLowestStat(pet)[0], 'Fome em queda');
+  Object.assign(pet, { hunger: 90, energy: 10 });
+  assert.equal(U.tipForLowestStat(pet)[0], 'Sono recarrega');
+  state.settings.reduceMotion = true;
+  assert.equal(U.scrollBehavior(state), 'auto');
+  state.settings.reduceMotion = false;
+  assert.equal(U.scrollBehavior(state), 'smooth');
+});
+
+test('chave local do dia usa componentes locais', () => {
+  assert.equal(E.localDateKey(new Date(2026, 0, 2, 23, 30)), '2026-01-02');
 });
 
 test('eventos do tick identificam o pet correto', () => {
@@ -628,6 +672,23 @@ test('modo foco conclui sessão, recompensa e alterna para pausa', () => {
   const breakDone = E.focusTick(state, state.focus.endsAt + 1000);
   assert.equal(breakDone.coins, 10);
   assert.equal(state.totals.focus, 1);
+});
+
+test('sessão de foco avança missões diária e semanal', () => {
+  const state = fresh();
+  const today = new Date();
+  state.daily.date = E.localDateKey(today);
+  state.daily.quests = [
+    { id: 'focus15', key: 'focus', target: 1, reward: 70, emoji: '⏱️', name: 'Foque por 15 minutos', progress: 0, claimed: false },
+    { id: 'q-feira', key: 'bath', target: 1, reward: 10, emoji: '🛁', name: 'Missão do dia', weather: 'feira', progress: 0, claimed: false }
+  ];
+  state.weekly = { week: D.weekKey(today), quests: [{ id: 'wfocus60', key: 'focus', target: 1, reward: 220, emoji: '🧠', name: 'Hora de foco na semana', progress: 0, claimed: false }] };
+  E.focusStart(state, 1, 'focus');
+  state.focus.endsAt = Date.now() - 1000;
+  const done = E.focusTick(state, Date.now());
+  assert.equal(done.completed, true);
+  assert.equal(state.daily.quests[0].claimed, true);
+  assert.equal(state.weekly.quests[0].claimed, true);
 });
 
 test('ofertas do dia aplicam desconto, estoque e contador', () => {
@@ -773,6 +834,20 @@ test('usar item em batalha consome cura e mantém o turno', () => {
   assert.equal(result.ok, true);
   assert.equal(state.inventory.apple, undefined);
   assert.ok(state.adventure.battle && state.adventure.battle.hp > 10);
+});
+
+test('vitamina craftada pode ser usada como cura em batalha', () => {
+  const state = fresh();
+  Object.assign(state.inventory, { apple: 1, milk: 1, carrot: 1 });
+  assert.equal(E.craft(state, 'vitaminRecipe').ok, true);
+  assert.equal(state.inventory.vitamin, 2);
+  assert.equal(state.inventory.apple, undefined);
+  assert.equal(E.startBattle(state, 'slime').ok, true);
+  state.adventure.battle.hp = 10;
+  const result = E.battleMove(state, 'item');
+  assert.equal(result.ok, true);
+  assert.equal(state.inventory.vitamin, 1);
+  assert.ok(state.adventure.battle.hp > 10);
 });
 
 test('contadores de aventura nulos herdam os totais do save', () => {

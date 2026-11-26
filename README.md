@@ -91,12 +91,11 @@ tamagotchi/
 ## Testes
 
 ```bash
+npm run check
 npm test
-# ou
-node tests/engine.test.js
 ```
 
-Suíte atual: 78 testes cobrindo tempo, evolução, economia, itens, troca de acessórios e decorações, elixir protegido, missões diárias/semanais e climáticas, check-in diário, calendário de cuidados, lembretes, foco com tarefa, personalidade, caminhos adultos, visitantes, streak, oficina, cozinha, buffs, mercado de trocas, pesca, estatísticas, acessibilidade, aniversário, figurinhas, ofertas, momentos, passeios, batalhas, doenças, slots, sanitização, eventos climáticos, acessórios de frio, efeitos do clima em aventuras, tema dia/noite automático, horta, rotina, ranking semanal e correções de robustez.
+Suíte atual: 83 testes de engine e 4 testes de consistência PWA cobrindo tempo, evolução, economia, itens, troca de acessórios e decorações, elixir protegido, missões diárias/semanais e climáticas, check-in diário, calendário de cuidados, lembretes, foco com tarefa e missões, personalidade, caminhos adultos, visitantes, streak, oficina, cozinha, buffs, mercado de trocas, pesca, estatísticas, acessibilidade, aniversário, figurinhas, ofertas, momentos, passeios, batalhas, doenças, slots, sanitização, eventos climáticos, acessórios de frio, efeitos do clima em aventuras, tema dia/noite automático, horta, rotina, ranking semanal, cache/versionamento do PWA, exportações usadas pelo app e correções de robustez.
 
 ## Salvamento
 

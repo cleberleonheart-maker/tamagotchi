@@ -535,7 +535,6 @@
 
     if (action === 'focus-reset') {
       state.focus = { running: false, mode: 'focus', minutes: 25, task: '', endsAt: 0, remaining: 25 * 60000 };
-      persist();
       refresh();
       UI.toast('Timer de foco zerado.', 'info');
       return { ok: true };
@@ -605,7 +604,7 @@
       currentFilter = data.filter || 'all';
       refresh({ tab: currentTab, filter: currentFilter });
       var card = document.getElementById('tabsCard');
-      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (card) card.scrollIntoView({ behavior: U.scrollBehavior(state), block: 'start' });
       A.play('click');
       return { ok: true };
     }
@@ -614,14 +613,14 @@
       currentTab = 'shop';
       refresh({ tab: currentTab });
       var card2 = document.getElementById('tabsCard');
-      if (card2) card2.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (card2) card2.scrollIntoView({ behavior: U.scrollBehavior(state), block: 'start' });
       A.play('click');
       return { ok: true };
     }
 
     if (action === 'go-games' || action === 'open-games') {
       var world = document.getElementById('sectionWorld');
-      if (world) world.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (world) world.scrollIntoView({ behavior: U.scrollBehavior(state), block: 'start' });
       A.play('click');
       return { ok: true };
     }
@@ -644,7 +643,7 @@
       }, function (step) {
         state.tutorial.step = step;
         persist();
-      });
+      }, { restart: !!(data && data.restart) });
       A.play('click');
       return { ok: true };
     }
@@ -762,7 +761,6 @@
       var questsBefore = (state.daily && state.daily.quests || []).map(function (quest) { return quest.claimed; });
       var reward = E.gameReward(state, result.gameId, result.score, result.maxScore);
       afterAction(reward, { sound: 'level', fx: '🪙', fxCount: 5, achievementsBefore: before, questsBefore: questsBefore });
-      persist();
       UI.showGameResult(reward);
     });
     if (!started) UI.toast('Não foi possível iniciar o jogo.', 'bad');
@@ -872,7 +870,7 @@
     if (!target) return;
     if (target.dataset.scroll) {
       var section = document.getElementById(target.dataset.scroll);
-      if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (section) section.scrollIntoView({ behavior: U.scrollBehavior(state), block: 'start' });
       $$('.mobile-nav button').forEach(function (button) { button.classList.toggle('active', button === target); });
       return;
     }
@@ -903,7 +901,8 @@
         enemy: target.dataset.enemy,
         move: target.dataset.move,
         mode: target.dataset.mode,
-        minutes: target.dataset.minutes
+        minutes: target.dataset.minutes,
+        restart: target.dataset.restart === 'true'
       });
   }
 
@@ -931,7 +930,7 @@
       if (index !== -1) {
         var next = tabs[(index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
         next.focus();
-        next.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        next.scrollIntoView({ behavior: U.scrollBehavior(state), block: 'nearest', inline: 'nearest' });
         next.click();
       }
       return;
@@ -977,6 +976,7 @@
   }
 
   function onTick() {
+    if (document.visibilityState !== 'visible') return;
     var events = E.tick(state);
     syncClock();
     announceStreak(events.streak);

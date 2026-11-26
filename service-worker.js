@@ -1,15 +1,17 @@
-const CACHE_NAME = 'tamavida-v41';
+const CACHE_NAME = 'tamavida-v42';
+const CACHE_PREFIX = 'tamavida-';
+const CACHE_VERSION = CACHE_NAME.slice(CACHE_PREFIX.length).replace('v', '');
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=41',
-  './js/data.js?v=41',
-  './js/audio.js?v=41',
-  './js/engine.js?v=41',
-  './js/games.js?v=41',
-  './js/ui.js?v=41',
-  './js/app.js?v=41',
-  './manifest.json?v=41',
+  './styles.css?v=42',
+  './js/data.js?v=42',
+  './js/audio.js?v=42',
+  './js/engine.js?v=42',
+  './js/games.js?v=42',
+  './js/ui.js?v=42',
+  './js/app.js?v=42',
+  './manifest.json?v=42',
   './icons/icon-180.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -26,7 +28,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME).map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
@@ -72,6 +74,7 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith(
     caches.match(request).then((cached) => {
+      if (cached && url.searchParams.get('v') === CACHE_VERSION) return cached;
       const fresh = fetch(request).then((response) => {
         if (!response.ok) return response;
         const copy = response.clone();

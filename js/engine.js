@@ -424,7 +424,7 @@
     state.totals.earned += coins;
     if (!wasBreak) {
       state.totals.focus += 1;
-      bumpRanking(state, 'focus', minutesDone, time);
+      bumpQuest(state, 'focus', minutesDone, time);
       if (!state.focusLog || typeof state.focusLog !== 'object') state.focusLog = {};
       var key = dateKey(new Date(time));
       state.focusLog[key] = Math.floor(num(state.focusLog[key], 0, 0, 100000) + minutesDone);
@@ -485,11 +485,11 @@
     return personality && personality.lines && personality.lines[kind] ? personality.lines[kind] : [];
   }
 
-  function logCareDay(state, key, amount) {
+  function logCareDay(state, key, amount, timestamp) {
     var careKeys = ['feed', 'bath', 'sleep', 'game', 'train', 'pet'];
     if (careKeys.indexOf(key) === -1) return;
     if (!state.careCalendar || typeof state.careCalendar !== 'object') state.careCalendar = {};
-    var day = dateKey(new Date());
+    var day = dateKey(new Date(timestamp || now()));
     var entry = state.careCalendar[day] || { feed: 0, bath: 0, sleep: 0, game: 0, train: 0, pet: 0 };
     entry[key] = Math.min(9999, savedCounter(entry[key], 0) + Math.max(0, clamp(amount, 0, 99)));
     state.careCalendar[day] = entry;
@@ -497,8 +497,8 @@
     while (days.length > 60) delete state.careCalendar[days.shift()];
   }
 
-  function bumpWeeklyQuest(state, key, amount) {
-    var weekly = ensureWeekly(state);
+  function bumpWeeklyQuest(state, key, amount, timestamp) {
+    var weekly = ensureWeekly(state, timestamp);
     weekly.quests.forEach(function (quest) {
       if (quest.key !== key || quest.claimed) return;
       quest.progress = Math.min(quest.target, quest.progress + amount);
@@ -511,12 +511,12 @@
     });
   }
 
-  function bumpQuest(state, key, amount) {
-    var daily = ensureDaily(state);
+  function bumpQuest(state, key, amount, timestamp) {
+    var daily = ensureDaily(state, timestamp);
     var completed = [];
-    logCareDay(state, key, amount);
+    logCareDay(state, key, amount, timestamp);
     bumpRanking(state, key, amount);
-    bumpWeeklyQuest(state, key, amount);
+    bumpWeeklyQuest(state, key, amount, timestamp);
     daily.quests.forEach(function (quest) {
       if (quest.key !== key || quest.claimed) return;
       quest.progress = Math.min(quest.target, quest.progress + amount);
@@ -1038,6 +1038,10 @@
     if (state.totals.walks >= 5) tryUnlock('walk_5');
     if (state.totals.battles >= 10) tryUnlock('battle_10');
     if (state.totals.bosses > 0) tryUnlock('boss');
+    if (state.totals.fished >= 10) tryUnlock('fish_10');
+    if (state.totals.checkins >= 7) tryUnlock('checkin_7');
+    if ((state.garden && state.garden.harvested || 0) >= 10) tryUnlock('harvest_10');
+    if (state.totals.visits >= 3) tryUnlock('visitor_3');
 
     if (pet) {
       if (pet.level >= 5) tryUnlock('level_5');
@@ -1707,11 +1711,11 @@
     var damage = 0;
     var enemyDamage = 0;
     if (move === 'item') {
-      var healItem = ['medicine', 'bandage', 'milk', 'apple'].find(function (id) { return (state.inventory[id] || 0) > 0; });
+      var healItem = Object.keys(DATA.BATTLE_HEALS).find(function (id) { return (state.inventory[id] || 0) > 0; });
       if (!healItem) return { ok: false, msg: 'Sem itens de cura no inventário.' };
       state.inventory[healItem] -= 1;
       if (state.inventory[healItem] <= 0) delete state.inventory[healItem];
-      var heal = { medicine: 35, bandage: 25, milk: 20, apple: 14 }[healItem];
+      var heal = DATA.BATTLE_HEALS[healItem];
       var restored = Math.min(heal, battle.maxHp - battle.hp);
       battle.hp += restored;
       battle.log.push(DATA.item(healItem).emoji + ' ' + pet.name + ' usou ' + DATA.item(healItem).name + ' e recuperou ' + restored + ' HP.');
@@ -1924,6 +1928,7 @@
     startBattle: startBattle,
     battleMove: battleMove,
     bumpQuest: bumpQuest,
+    localDateKey: dateKey,
     ensureWeekly: ensureWeekly,
     careQuality: careQuality,
     tick: tick,

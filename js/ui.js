@@ -30,6 +30,10 @@
     ['Elixir salva vidas', 'Se a saúde chegar a zero, use um Elixir da vida para reanimar.']
   ];
 
+  var TIP_FOR_STAT = {
+    hunger: TIPS[0], happiness: TIPS[1], hygiene: TIPS[2], energy: TIPS[4], health: TIPS[7], discipline: TIPS[3]
+  };
+
   function $(selector, scope) { return (scope || document).querySelector(selector); }
   function $$(selector, scope) { return Array.prototype.slice.call((scope || document).querySelectorAll(selector)); }
   function esc(value) {
@@ -46,6 +50,16 @@
     $$('.item-card', panel).forEach(function (card) {
       card.hidden = !!needle && normalizeText(card.textContent).indexOf(needle) < 0;
     });
+  }
+  function scrollBehavior(state) {
+    return state && state.settings && state.settings.reduceMotion ? 'auto' : 'smooth';
+  }
+  function tipForLowestStat(pet) {
+    if (!pet) return null;
+    var lowest = STATS.slice(0, 5).reduce(function (best, stat) {
+      return !best || pet[stat.key] < pet[best.key] ? stat : best;
+    }, null);
+    return lowest && pet[lowest.key] < 45 ? (TIP_FOR_STAT[lowest.key] || TIPS[0]) : null;
   }
 
   function fmtAge(minutes) {
@@ -405,7 +419,7 @@
   }
 
   function shopMarkup(state, pet) {
-    var today = new Date().toISOString().slice(0, 10);
+    var today = E.localDateKey(new Date());
     var deals = DATA.dealsForDay().map(function (deal) {
       var item = DATA.item(deal.itemId);
       var bought = state.deals && state.deals.date === today ? (state.deals.bought[deal.itemId] || 0) : 0;
@@ -643,7 +657,7 @@
             '<button class="mini-btn primary" type="button" data-action="battle-move" data-move="attack">⚔️ Atacar <kbd>1</kbd></button>' +
             '<button class="mini-btn" type="button" data-action="battle-move" data-move="defend">🛡️ Defender <kbd>2</kbd></button>' +
             '<button class="mini-btn" type="button" data-action="battle-move" data-move="item"' +
-              (['medicine', 'bandage', 'milk', 'apple'].some(function (id) { return (state.inventory[id] || 0) > 0; }) ? '' : ' disabled') +
+              (Object.keys(DATA.BATTLE_HEALS).some(function (id) { return (state.inventory[id] || 0) > 0; }) ? '' : ' disabled') +
               '>💊 Usar item <kbd>3</kbd></button>' +
             '<button class="mini-btn ghost" type="button" data-action="battle-move" data-move="flee">🏃 Fugir <kbd>4</kbd></button>' +
           '</div>' +
@@ -967,18 +981,17 @@
       return '<div class="collection-item' + (owned ? ' owned' : '') + '" title="' + esc(species.name) + '">' + species.emoji + '</div>';
     }).join('');
 
-    var lowest = STATS.slice(0, 5).map(function (stat) { return { label: stat.label, value: pet[stat.key], tip: TIPS.find(function (tip) { return tip[0].indexOf(stat.label.slice(0, 4)) !== -1; }) }; })
-      .sort(function (a, b) { return a.value - b.value; })[0];
+    var statTip = tipForLowestStat(pet);
     var pendingQuests = (state.daily.quests || []).filter(function (quest) { return !quest.claimed; }).length;
     var tip;
     if (pet.illness) tip = ['Está doente!', 'Use uma bandagem ou mantenha fome e higiene altas para curar mais rápido.'];
     else if (pet.status === 'critical') tip = ['Estado crítico!', 'Use um Elixir da vida na loja para reanimar seu bichinho.'];
     else if (pendingQuests) tip = ['Missões pendentes', 'Você tem ' + pendingQuests + ' desafio(s) de hoje para concluir.'];
     else if (state.streak && state.streak.count % 3 === 0) tip = ['Sequência forte!', 'Volte amanhã para manter o ritmo e ganhar mais moedas.'];
-    else tip = lowest && lowest.value < 45 ? lowest.tip : TIPS[Math.floor(Date.now() / 60000) % TIPS.length];
+    else tip = statTip || TIPS[Math.floor(Date.now() / 60000) % TIPS.length];
     if (!tip) tip = TIPS[0];
     $('#tipCard').innerHTML = '<b>💡 ' + esc(tip[0]) + '</b>' + esc(tip[1]) +
-      '<button class="ghost-btn tip-tutorial" type="button" data-action="open-tutorial">❓ Rever tutorial</button>';
+      '<button class="ghost-btn tip-tutorial" type="button" data-action="open-tutorial" data-restart="true">❓ Rever tutorial</button>';
   }
 
   function renderBackupHint(state) {
@@ -1088,6 +1101,7 @@
     if (!toastRoot) return;
     var node = document.createElement('div');
     node.className = 'toast ' + (type || '');
+    node.setAttribute('role', type === 'bad' || type === 'critical' ? 'alert' : 'status');
     node.textContent = message;
     toastRoot.appendChild(node);
     setTimeout(function () {
@@ -1535,9 +1549,10 @@
     });
   }
 
-  function showTutorial(state, onComplete, onProgress) {
+  function showTutorial(state, onComplete, onProgress, options) {
     var total = DATA.TUTORIAL.length;
-    var step = Math.min(Math.max(0, (state.tutorial && state.tutorial.step) || 0), total - 1);
+    var savedStep = options && options.restart ? 0 : ((state.tutorial && state.tutorial.step) || 0);
+    var step = Math.min(Math.max(0, savedStep), total - 1);
     function renderStep() {
       var item = DATA.TUTORIAL[step];
       var dots = DATA.TUTORIAL.map(function (_, index) {
@@ -1586,12 +1601,16 @@
     updateLive: updateLive,
     renderTab: renderTab,
     renderPet: renderPet,
+    renderPicker: renderPicker,
+    renderRight: renderRight,
     renderTopbar: renderTopbar,
     renderFocus: renderFocus,
     updateFocus: updateFocus,
     renderAlerts: renderAlerts,
     applyTheme: applyTheme,
     themeInfo: themeInfo,
+    scrollBehavior: scrollBehavior,
+    tipForLowestStat: tipForLowestStat,
     toast: toast,
     showSoundCue: showSoundCue,
     openModal: openModal,
