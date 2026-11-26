@@ -172,6 +172,23 @@
     }
   }
 
+  function exportSaveFile() {
+    try {
+      var blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement('a');
+      link.href = url;
+      link.download = 'tamavida-save-' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      UI.toast('Backup salvo em arquivo JSON.', 'good');
+    } catch (error) {
+      UI.toast('Não foi possível salvar o backup em arquivo.', 'bad');
+    }
+  }
+
   function exportMomentsPng() {
     if (!state.moments.length) {
       UI.toast('Registre um momento antes de exportar.', 'bad');
@@ -700,7 +717,7 @@
             }
           }
           if (key === 'reminderMorning' || key === 'reminderEvening' || key.indexOf('routine:') === 0) scheduleReminders();
-          if (key === 'theme' || key === 'contrast' || key === 'fontSize' || key === 'reduceMotion' || key === 'visualCues' || key === 'narration') UI.applyTheme(state);
+          if (key === 'theme' || key === 'contrast' || key === 'fontSize' || key === 'reduceMotion' || key === 'visualCues' || key === 'narration' || key === 'narrationVoice' || key === 'narrationRate') UI.applyTheme(state);
           if (key === 'theme') syncClock();
           UI.renderTopbar(state);
           persist();
@@ -720,6 +737,7 @@
 
     if (action === 'export-save') { UI.showExport(state); persist(); return { ok: true }; }
     if (action === 'export-csv') { exportCsv(); return { ok: true }; }
+    if (action === 'export-file') { exportSaveFile(); return { ok: true }; }
 
     if (action === 'import-save') {
       UI.showImport(state, function (imported) {

@@ -83,4 +83,23 @@ test('v43 expõe companheiros, restauração e recursos de acessibilidade', () =
   assert.ok(ui.includes('function showStory('));
 });
 
+test('v44 expõe backup em arquivo, desafio diário e narração configurável', () => {
+  const html = read('index.html');
+  const css = read('styles.css');
+  const ui = read('js/ui.js');
+  const app = read('js/app.js');
+  const engine = read('js/engine.js');
+  assert.equal(D.VERSION, 'v44');
+  assert.ok(html.includes('data-action="export-file"'));
+  assert.ok(ui.includes('narrationVoiceSelect'));
+  assert.ok(ui.includes('narrationRateSelect'));
+  assert.ok(ui.includes('game-challenge'));
+  assert.ok(ui.includes('restore-warning'));
+  assert.ok(css.includes('.game-challenge'));
+  assert.ok(css.includes('.restore-warning'));
+  assert.ok(app.includes('function exportSaveFile('));
+  assert.ok(engine.includes('elixir: 3'));
+  assert.ok(engine.includes('medicine: 3'));
+});
+
 console.log(passed + ' testes de PWA passaram.');

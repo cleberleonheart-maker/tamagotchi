@@ -820,6 +820,23 @@ body[data-theme='day'] .field input, body[data-theme='day'] .field textarea, bod
 .tap-hole::after { content: attr(data-key); position: absolute; bottom: 6px; right: 9px; font-size: .66rem; color: rgba(255, 255, 255, .38); font-weight: 800; }
 .tap-target { width: 66px; height: 66px; border: 0; border-radius: 50%; font-size: 2rem; background: rgba(255, 123, 184, .2); animation: popIn .15s ease-out; box-shadow: 0 0 22px rgba(255, 123, 184, .45); }
 
+.game-challenge {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px;
+  border-radius: 13px;
+  border: 1px solid var(--primary);
+  background: linear-gradient(120deg, rgba(124, 92, 255, .2), rgba(255, 213, 74, .12));
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.game-challenge span { color: var(--primary); font-size: .72rem; font-weight: 800; letter-spacing: .04em; }
+.game-challenge b { font-size: .92rem; }
+.game-challenge small { color: var(--muted); }
+
 .quiz-arena { display: grid; place-items: center; padding: 14px; overflow-y: auto; }
 .quiz-card {
   width: min(100%, 520px);
@@ -1522,6 +1539,7 @@ body[data-motion='reduce'] *::after {
 .restore-option { display: grid; gap: 2px; text-align: left; padding: 10px 12px; border-radius: 11px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); cursor: pointer; }
 .restore-option:hover { border-color: var(--primary); }
 .restore-option small { color: var(--muted); }
+.restore-warning { margin: 10px 0 0; padding: 9px 11px; border-radius: 10px; border: 1px solid #ff9b6b; background: rgba(255, 128, 90, .14); color: var(--text); font-size: .82rem; }
 
 .moment-grid {
   display: grid;

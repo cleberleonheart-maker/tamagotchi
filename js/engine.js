@@ -548,11 +548,12 @@
       settings: {
         sound: true, music: false, ambientSound: true, notifications: false, reminderMorning: '08:00', reminderEvening: '20:00',
         speed: 3, theme: 'auto', contrast: 'normal', fontSize: 'normal', reduceMotion: false, visualCues: true, vibration: true,
-        narration: false, shortcuts: { feed: 'Space', shop: 'KeyC', games: 'KeyJ', help: 'Slash' }
+        narration: false, narrationRate: 1, narrationVoice: 'default',
+        shortcuts: { feed: 'Space', shop: 'KeyC', games: 'KeyJ', help: 'Slash' }
       },
       lastExportAt: 0,
       coins: 150,
-      inventory: { apple: 3, soap: 1 },
+      inventory: { apple: 3, soap: 1, medicine: 3, elixir: 3 },
       totals: {
         feeds: 0, plays: 0, games: 0, baths: 0, trains: 0, crafted: 0, cooked: 0, trades: 0, fished: 0,
         gifts: 0, focus: 0, deals: 0, moments: 0, walks: 0, battles: 0, wins: 0, bosses: 0, visits: 0, earned: 0, checkins: 0,
@@ -685,6 +686,10 @@
       visualCues: settings.visualCues !== false,
       vibration: settings.vibration !== false,
       narration: settings.narration === true,
+      narrationRate: DATA.NARRATION_RATE_LABELS[Number(settings.narrationRate)] ? Number(settings.narrationRate) : 1,
+      narrationVoice: (function (value) {
+        return value === 'default' || /^[\p{L}\p{N}_. -]{1,120}$/u.test(value) ? value.slice(0, 120) : 'default';
+      })(String(settings.narrationVoice || 'default')),
       shortcuts: {}
     };
     var shortcuts = settings.shortcuts || {};
@@ -910,7 +915,8 @@
         visits: savedCounter(rawFriend.visits, 0),
         lastDay: validDay(rawFriend.lastDay),
         request: null,
-        stories: {}
+        stories: {},
+        gifts: {}
       };
       var rawRequest = rawFriend.request;
       var request = rawRequest && companion.requests.find(function (item) { return item.id === rawRequest.id; });
@@ -929,6 +935,11 @@
           unlockedAt: num(rawStory.unlockedAt || rawStory, now(), 0, Date.now() + 86400000),
           readAt: num(rawStory.readAt, 0, 0, Date.now() + 86400000)
         };
+      });
+      (companion.gifts || []).forEach(function (gift) {
+        var rawGift = rawFriend.gifts && rawFriend.gifts[gift.id];
+        if (!rawGift) return;
+        friend.gifts[gift.id] = { unlockedAt: num(rawGift.unlockedAt || rawGift, now(), 0, Date.now() + 86400000) };
       });
       state.companions.friends[id] = friend;
     });
@@ -1187,8 +1198,9 @@
     var companion = DATA.companion(id);
     if (!companion) return null;
     var friend = state.companions.friends[id];
-    if (!friend || typeof friend !== 'object') friend = { affinity: 0, visits: 0, lastDay: '', request: null, stories: {} };
+    if (!friend || typeof friend !== 'object') friend = { affinity: 0, visits: 0, lastDay: '', request: null, stories: {}, gifts: {} };
     if (!friend.stories || typeof friend.stories !== 'object') friend.stories = {};
+    if (!friend.gifts || typeof friend.gifts !== 'object') friend.gifts = {};
     friend.affinity = Math.floor(num(friend.affinity, 0, 0, 100000));
     friend.visits = savedCounter(friend.visits, 0);
     state.companions.friends[id] = friend;
@@ -1227,7 +1239,28 @@
       friend.stories[story.id] = { unlockedAt: time, readAt: 0 };
       state.totals.companionStories = Math.floor(num(state.totals.companionStories, 0, 0, 1000000) + 1);
       addLog(state, '📖 Nova história: ' + story.title + ' — ' + companion.name, 'achievement');
+      bumpQuest(state, 'story', 1, time);
       unlocked.push(story);
+    });
+    return unlocked;
+  }
+
+  function unlockCompanionGifts(state, companion, friend, timestamp, notes) {
+    var unlocked = [];
+    (companion.gifts || []).forEach(function (gift) {
+      if (friend.affinity < gift.minAffinity || friend.gifts[gift.id]) return;
+      friend.gifts[gift.id] = { unlockedAt: timestamp || now() };
+      if (gift.item && DATA.item(gift.item)) {
+        var quantity = Math.floor(num(gift.qty, 1, 1, 20));
+        state.inventory[gift.item] = (state.inventory[gift.item] || 0) + quantity;
+      }
+      if (gift.coins) {
+        state.coins += gift.coins;
+        state.totals.earned += gift.coins;
+      }
+      addLog(state, '🎁 Presente de ' + companion.name + ': ' + gift.text, 'good');
+      if (notes) notes.push('presente: ' + gift.text);
+      unlocked.push(gift);
     });
     return unlocked;
   }
@@ -1254,10 +1287,12 @@
         state.inventory[request.item] = (state.inventory[request.item] || 0) + quantity;
       }
       var stories = unlockCompanionStories(state, companion, friend, timestamp);
+      var gifts = unlockCompanionGifts(state, companion, friend, timestamp);
       addMoment(state, 'Pedido de ' + companion.name + ' concluído', request.text + ' +' + request.coins + ' 🪙');
       addLog(state, '✅ Pedido de ' + companion.name + ' concluído: +' + request.coins + ' 🪙', 'good');
+      bumpQuest(state, 'companion', 1, timestamp);
       checkAchievements(state, activePet(state));
-      completed.push({ companion: companion, request: request, stories: stories });
+      completed.push({ companion: companion, request: request, stories: stories, gifts: gifts });
     });
     return completed;
   }
@@ -1274,6 +1309,8 @@
     if (friend.visits === 1) notes.push('nova amizade');
     var stories = unlockCompanionStories(state, companion, friend, time);
     stories.forEach(function (story) { notes.push('história: ' + story.title); });
+    var gifts = unlockCompanionGifts(state, companion, friend, time, notes);
+    if (gifts.length) bumpQuest(state, 'companion', 1, time);
     if (friend.request && !friend.request.claimed) {
       var request = companion.requests.find(function (item) { return item.id === friend.request.id; });
       if (request) notes.push('pedido ' + friend.request.progress + '/' + request.target);
@@ -2153,6 +2190,7 @@
     companionFriend: companionFriend,
     ensureCompanions: ensureCompanions,
     bumpCompanionRequests: bumpCompanionRequests,
+    unlockCompanionGifts: unlockCompanionGifts,
     readCompanionStory: readCompanionStory,
     focusStart: focusStart,
     focusStop: focusStop,

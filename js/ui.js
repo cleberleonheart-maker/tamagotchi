@@ -141,6 +141,8 @@
     document.body.dataset.motion = settings.reduceMotion ? 'reduce' : 'normal';
     document.body.dataset.cues = settings.visualCues === false ? 'off' : 'on';
     document.body.dataset.narration = settings.narration ? 'on' : 'off';
+    document.body.dataset.narrationRate = String(settings.narrationRate || 1);
+    document.body.dataset.narrationVoice = settings.narrationVoice || 'default';
     var pill = $('#dayPill');
     if (pill) pill.textContent = night ? '🌙 Noite' : '☀️ Dia';
     var celestial = $('#celestial');
@@ -637,8 +639,9 @@
       '<small>Visitas viram amizade. Cada ajuda rende presentes e desbloqueia histórias.</small></div>' +
       '<span>💚 ' + known + '/' + DATA.COMPANIONS.length + ' amigos</span></div>';
     return header + '<div class="companions-grid">' + DATA.COMPANIONS.map(function (companion) {
-      var friend = friends[companion.id] || { affinity: 0, visits: 0, request: null, stories: {} };
+      var friend = friends[companion.id] || { affinity: 0, visits: 0, request: null, stories: {}, gifts: {} };
       var affinity = Math.min(100, Math.round((friend.affinity || 0) * 5));
+      var giftCount = Object.keys(friend.gifts || {}).length;
       var request = friend.request && companion.requests.find(function (item) { return item.id === friend.request.id; });
       var requestHtml = request
         ? '<div class="companion-request">' +
@@ -660,6 +663,7 @@
         '<span class="companion-level">' + (friend.affinity || 0) + '💚</span></div>' +
         '<div class="mini-progress"><i style="width:' + affinity + '%"></i></div>' +
         '<small>' + (friend.visits || 0) + ' visita(s) • última visita ' + (friend.lastDay ? esc(friend.lastDay) : '—') + '</small>' +
+        '<small>🎁 Presentes: ' + giftCount + '/' + (companion.gifts || []).length + '</small>' +
         requestHtml + '<div class="companion-stories">' + stories + '</div></div>';
     }).join('') + '</div>';
   }
@@ -990,7 +994,10 @@
     renderWeekly(state);
     renderFocus(state);
 
-    $('#gamesList').innerHTML = DATA.GAMES.map(function (game) {
+    var dailyGame = DATA.gameForDay(new Date());
+    $('#gamesList').innerHTML = '<button class="game-challenge" type="button" data-action="play-game" data-game="' + dailyGame.id + '"' + (pet.status !== 'alive' ? ' disabled' : '') + '>' +
+        '<span>🎯 Desafio de hoje</span><b>' + esc(dailyGame.name) + '</b><small>Toque para jogar</small>' +
+      '</button>' + DATA.GAMES.map(function (game) {
       return '<button class="game-row" type="button" data-action="play-game" data-game="' + game.id + '"' + (pet.status !== 'alive' ? ' disabled' : '') + '>' +
         '<span class="game-emoji">' + game.emoji + '</span>' +
         '<span><b>' + esc(game.name) + '</b><small>' + esc(game.desc) + '</small></span>' +
@@ -1142,8 +1149,15 @@
       global.speechSynthesis.cancel();
       var utterance = new global.SpeechSynthesisUtterance(String(message).slice(0, 160));
       utterance.lang = 'pt-BR';
-      utterance.rate = 1;
+      utterance.rate = Number(document.body.dataset.narrationRate) || 1;
       utterance.volume = 0.85;
+      var wanted = document.body.dataset.narrationVoice || 'default';
+      var voices = global.speechSynthesis.getVoices ? global.speechSynthesis.getVoices() : [];
+      var voice = voices.find(function (item) { return item.voiceURI === wanted || item.name === wanted; });
+      if (!voice && wanted === 'default') {
+        voice = voices.find(function (item) { return String(item.lang || '').toLowerCase().indexOf('pt-br') === 0; });
+      }
+      if (voice) utterance.voice = voice;
       global.speechSynthesis.speak(utterance);
     } catch (error) { /* noop */ }
   }
@@ -1189,10 +1203,11 @@
   function openModal(config) {
     if (!modalRoot) return;
     if (modalRoot._trap) document.removeEventListener('keydown', modalRoot._trap);
-    modalRoot._restoreFocus = document.activeElement;
+    if (modalRoot._focusGuard) document.removeEventListener('focusin', modalRoot._focusGuard);
+    if (!modalRoot.firstChild || !modalRoot.contains(document.activeElement)) modalRoot._restoreFocus = document.activeElement;
     config = config || {};
     modalRoot._locked = !!config.locked;
-    modalRoot.innerHTML = '<div class="overlay"><div class="modal" role="dialog" aria-modal="true">' +
+    modalRoot.innerHTML = '<div class="overlay"><div class="modal" role="dialog" aria-modal="true" tabindex="-1">' +
       '<h2>' + (config.title || '') + '</h2>' +
       (config.sub ? '<p class="modal-sub">' + config.sub + '</p>' : '') +
       '<div class="modal-body">' + (config.body || '') + '</div>' +
@@ -1224,6 +1239,10 @@
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
     document.addEventListener('keydown', modalRoot._trap);
+    modalRoot._focusGuard = function (event) {
+      if (modalRoot.firstChild && !modal.contains(event.target)) modal.focus();
+    };
+    document.addEventListener('focusin', modalRoot._focusGuard);
     var firstInput = $('input, textarea, select', modal);
     var initialFocus = (!config.noAutofocus && firstInput) ? firstInput : $('.btn.primary', modal) || $('.btn', modal);
     if (initialFocus) setTimeout(function () { initialFocus.focus(); }, 60);
@@ -1234,6 +1253,10 @@
     if (modalRoot._trap) {
       document.removeEventListener('keydown', modalRoot._trap);
       modalRoot._trap = null;
+    }
+    if (modalRoot._focusGuard) {
+      document.removeEventListener('focusin', modalRoot._focusGuard);
+      modalRoot._focusGuard = null;
     }
     modalRoot.innerHTML = '';
     modalRoot._locked = false;
@@ -1363,6 +1386,15 @@
     var speed = Number(state.settings.speed) || 3;
     var theme = state.settings.theme || 'auto';
     var shortcuts = state.settings.shortcuts || {};
+    var narrationRate = Number(state.settings.narrationRate) || 1;
+    var narrationVoice = state.settings.narrationVoice || 'default';
+    var voices = [{ voiceURI: 'default', name: 'Padrão (português)' }];
+    try {
+      var available = (global.speechSynthesis && global.speechSynthesis.getVoices && global.speechSynthesis.getVoices()) || [];
+      available.filter(function (voice) { return String(voice.lang || '').toLowerCase().indexOf('pt-br') === 0; }).forEach(function (voice) {
+        voices.push({ voiceURI: voice.voiceURI || voice.name, name: voice.name || voice.voiceURI });
+      });
+    } catch (error) {}
     function keyName(key) { return esc(DATA.SHORTCUT_LABELS[shortcuts[key]] || shortcuts[key] || '—'); }
     var rows = [
       { key: 'sound', icon: '🔊', title: 'Efeitos sonoros', sub: 'Sons de ações e conquistas' },
@@ -1401,6 +1433,19 @@
       '<div class="settings-row"><div><b>🔠 Tamanho do texto</b><small>Aumenta a leitura nos painéis</small></div>' +
       '<select id="fontSelect" style="border:1px solid var(--border-strong);border-radius:9px;background:var(--surface-2);color:var(--text);padding:6px">' +
         Object.keys(DATA.FONT_LABELS).map(function (key) { return '<option value="' + key + '"' + (key === state.settings.fontSize ? ' selected' : '') + '>' + DATA.FONT_LABELS[key] + '</option>'; }).join('') +
+      '</select></div>' +
+      '<div class="settings-row"><div><b>🗣️ Voz da narração</b><small>Vozes em português do dispositivo</small></div>' +
+      '<select id="narrationVoiceSelect" style="border:1px solid var(--border-strong);border-radius:9px;background:var(--surface-2);color:var(--text);padding:6px">' +
+        voices.map(function (voice) {
+          var value = voice.voiceURI || voice.name;
+          return '<option value="' + esc(value) + '"' + (value === narrationVoice ? ' selected' : '') + '>' + esc(voice.name) + '</option>';
+        }).join('') +
+      '</select></div>' +
+      '<div class="settings-row"><div><b>⏱️ Velocidade da narração</b><small>Como a voz fala os avisos</small></div>' +
+      '<select id="narrationRateSelect" style="border:1px solid var(--border-strong);border-radius:9px;background:var(--surface-2);color:var(--text);padding:6px">' +
+        Object.keys(DATA.NARRATION_RATE_LABELS).map(function (value) {
+          return '<option value="' + value + '"' + (Number(value) === narrationRate ? ' selected' : '') + '>' + DATA.NARRATION_RATE_LABELS[value] + '</option>';
+        }).join('') +
       '</select></div>' +
       '<div class="settings-section"><b>⌨️ Atalhos personalizados</b><small>Escolha as teclas das ações rápidas</small>' +
       DATA.SHORTCUT_OPTIONS.map(function (option) {
@@ -1452,6 +1497,14 @@
         $('#fontSelect', modal).addEventListener('change', function (event) {
           state.settings.fontSize = event.target.value;
           if (handlers && handlers.onChange) handlers.onChange('fontSize', state.settings.fontSize);
+        });
+        $('#narrationVoiceSelect', modal).addEventListener('change', function (event) {
+          state.settings.narrationVoice = event.target.value;
+          if (handlers && handlers.onChange) handlers.onChange('narrationVoice', state.settings.narrationVoice);
+        });
+        $('#narrationRateSelect', modal).addEventListener('change', function (event) {
+          state.settings.narrationRate = Number(event.target.value);
+          if (handlers && handlers.onChange) handlers.onChange('narrationRate', state.settings.narrationRate);
         });
         $$('[data-shortcut]', modal).forEach(function (select) {
           select.addEventListener('change', function (event) {
@@ -1607,6 +1660,11 @@
 
   function showRestoreConfirm(imported, label, onRestore) {
     var pet = E.activePet(imported);
+    var current = E.load();
+    var newer = current && Number(current.updatedAt || 0) > Number(imported.updatedAt || 0) + 5 * 60 * 1000;
+    var warning = newer
+      ? '<p class="restore-warning">⚠️ Seu progresso atual é mais recente que esta origem. Restaurar pode apagar horas recentes.</p>'
+      : '';
     openModal({
       title: '♻️ Confirmar restauração',
       sub: 'Confira o progresso antes de substituir o atual.',
@@ -1615,7 +1673,7 @@
         '<div class="summary-row"><span>Bichinho</span><b>' + esc(pet ? pet.name : '—') + '</b></div>' +
         '<div class="summary-row"><span>Moedas</span><b>🪙 ' + imported.coins + '</b></div>' +
         '<div class="summary-row"><span>Conquistas</span><b>' + Object.keys(imported.achievements || {}).length + '</b></div>' +
-        '</div><p class="muted" style="margin-top:10px">O progresso atual será substituído. Os slots não são apagados.</p>',
+        '</div>' + warning + '<p class="muted" style="margin-top:10px">O progresso atual será substituído. Os slots não são apagados.</p>',
       actions: [
         { label: 'Cancelar', cls: 'ghost' },
         { label: 'Restaurar', cls: 'primary', onClick: function () {

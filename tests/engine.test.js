@@ -838,7 +838,7 @@ test('usar item em batalha consome cura e mantém o turno', () => {
   const pet = E.activePet(state);
   pet.xp = 200;
   pet.level = 4;
-  state.inventory.apple = 1;
+  state.inventory = { apple: 1 };
   assert.equal(E.startBattle(state, 'slime').ok, true);
   state.adventure.battle.hp = 10;
   const result = E.battleMove(state, 'item');
@@ -849,7 +849,7 @@ test('usar item em batalha consome cura e mantém o turno', () => {
 
 test('vitamina craftada pode ser usada como cura em batalha', () => {
   const state = fresh();
-  Object.assign(state.inventory, { apple: 1, milk: 1, carrot: 1 });
+  state.inventory = { apple: 1, milk: 1, carrot: 1 };
   assert.equal(E.craft(state, 'vitaminRecipe').ok, true);
   assert.equal(state.inventory.vitamin, 2);
   assert.equal(state.inventory.apple, undefined);
@@ -1291,6 +1291,66 @@ test('backup automático sobrevive ao save e pode ser restaurado', () => {
   assert.equal(E.activePet(restored).name, 'Teste');
   assert.equal(E.clearAutoBackup(), true);
   assert.equal(E.autoBackupInfo(), null);
+});
+
+test('v44 começa com remédios e elixires e corrige o pedido do amigo', () => {
+  const state = fresh();
+  assert.equal(state.inventory.medicine, 3);
+  assert.equal(state.inventory.elixir, 3);
+  const amigo = D.COMPANIONS.find((companion) => companion.id === 'amigo');
+  assert.equal(amigo.requests[0].key, 'game');
+  const loaded = E.importSave(E.exportSave(state));
+  assert.equal(loaded.inventory.medicine, 3);
+  assert.equal(loaded.inventory.elixir, 3);
+});
+
+test('narração v44 aceita voz e velocidade e corrige valores inválidos', () => {
+  const state = fresh();
+  assert.equal(state.settings.narrationRate, 1);
+  assert.equal(state.settings.narrationVoice, 'default');
+  const raw = JSON.parse(JSON.stringify(state));
+  raw.settings.narrationRate = 1.25;
+  raw.settings.narrationVoice = 'Google português';
+  const loaded = E.sanitizeSave(raw);
+  assert.equal(loaded.settings.narrationRate, 1.25);
+  assert.equal(loaded.settings.narrationVoice, 'Google português');
+  raw.settings.narrationRate = 9;
+  raw.settings.narrationVoice = '<script>';
+  const sanitized = E.sanitizeSave(raw);
+  assert.equal(sanitized.settings.narrationRate, 1);
+  assert.equal(sanitized.settings.narrationVoice, 'default');
+  assert.ok(D.NARRATION_RATE_LABELS['1.5']);
+});
+
+test('presentes de companheiros rendem itens quando a afinidade sobe', () => {
+  const state = fresh();
+  const time = Date.now();
+  E.ensureCompanions(state, time);
+  const companion = D.COMPANIONS[0];
+  const friend = E.companionFriend(state, companion.id);
+  friend.affinity = 10;
+  state.inventory.cake = 0;
+  const coins = state.coins;
+  const completed = E.bumpCompanionRequests(state, 'feed', companion.requests[0].target, time);
+  assert.equal(completed.length, 1);
+  assert.ok(friend.gifts[companion.gifts[0].id]);
+  assert.equal(state.inventory.cake, 1);
+  assert.ok(state.coins > coins);
+});
+
+test('v44 adiciona missões de amizade, histórias e desafio diário de minigame', () => {
+  const keys = D.WEEKLY_QUESTS.map((quest) => quest.key);
+  assert.ok(keys.includes('companion'));
+  assert.ok(keys.includes('story'));
+  const game = D.gameForDay(new Date('2026-11-26T12:00:00'));
+  assert.ok(D.GAMES.some((item) => item.id === game.id));
+  const state = fresh();
+  const time = Date.now();
+  E.bumpQuest(state, 'companion', 1, time);
+  E.bumpQuest(state, 'story', 1, time);
+  state.weekly.quests
+    .filter((quest) => quest.key === 'companion' || quest.key === 'story')
+    .forEach((quest) => assert.ok(quest.progress >= 1));
 });
 
 console.log('\n' + passed + ' testes passaram.');

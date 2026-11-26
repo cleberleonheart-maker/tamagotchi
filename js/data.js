@@ -231,7 +231,9 @@
     { id: 'wpet15', key: 'pet', target: 15, reward: 160, emoji: '🤗', name: 'Carinhos da semana' },
     { id: 'wwalk5', key: 'walk', target: 5, reward: 210, emoji: '🌳', name: 'Passeios da semana' },
     { id: 'wbattle5', key: 'battle', target: 5, reward: 230, emoji: '⚔️', name: 'Batalhas da semana' },
-    { id: 'wfocus60', key: 'focus', target: 60, reward: 220, emoji: '🧠', name: 'Hora de foco na semana' }
+    { id: 'wfocus60', key: 'focus', target: 60, reward: 220, emoji: '🧠', name: 'Hora de foco na semana' },
+    { id: 'wcompanion3', key: 'companion', target: 3, reward: 210, emoji: '🤝', name: 'Pedidos da semana' },
+    { id: 'wstory2', key: 'story', target: 2, reward: 180, emoji: '📖', name: 'Histórias da semana' }
   ];
 
   var PERSONALITIES = [
@@ -284,6 +286,10 @@
       stories: [
         { id: 'vovo-receita', minAffinity: 6, title: 'A receita secreta', text: 'A Vovó Biju ensinou que o segredo da receita não é o açúcar: é preparar com calma e dividir com alguém.' },
         { id: 'vovo-jardim', minAffinity: 14, title: 'O jardim da vovó', text: 'Ela contou que cada vaso da janela tem um nome. O seu favorito é o pequeno vaso de hortelã que nunca falta.' }
+      ],
+      gifts: [
+        { id: 'vovo-gift10', minAffinity: 10, item: 'cake', qty: 1, coins: 40, text: 'A Vovó Biju mandou um bolo caseiro.' },
+        { id: 'vovo-gift20', minAffinity: 20, item: 'shineTea', qty: 1, coins: 60, text: 'A Vovó Biju preparou um chá relaxante.' }
       ]
     },
     {
@@ -294,16 +300,24 @@
       stories: [
         { id: 'fada-varinha', minAffinity: 6, title: 'A varinha emprestada', text: 'A fada deixou a varinha sobre a mesa por uma noite. Seu bichinho olhou, piscou e decidiu que brilhar também é cuidar.' },
         { id: 'fada-lua', minAffinity: 14, title: 'Pó de lua cheia', text: 'Ela guarda pó de lua em pequenos frascos. Só abre quando alguém aprende a acalmar um amigo sem dizer nada.' }
+      ],
+      gifts: [
+        { id: 'fada-gift10', minAffinity: 10, item: 'perfume', qty: 1, coins: 45, text: 'A Fada madrinha deixou um perfume brilhante.' },
+        { id: 'fada-gift20', minAffinity: 20, item: 'bubbletea', qty: 2, coins: 70, text: 'A Fada madrinha deixou chá com bolhas na sua bolsa.' }
       ]
     },
     {
       id: 'amigo', name: 'Amigo da escola', emoji: '🧑‍🤝‍🧑', trait: 'Brincadeiras e trocas',
       requests: [
-        { id: 'amigo-play', key: 'play', target: 3, coins: 30, item: 'ball', qty: 1, affinity: 6, text: 'Brinque 3 vezes e ganhe uma bola nova.' }
+        { id: 'amigo-play', key: 'game', target: 3, coins: 30, item: 'ball', qty: 1, affinity: 6, text: 'Jogue 3 minigames e ganhe uma bola nova.' }
       ],
       stories: [
         { id: 'amigo-recreio', minAffinity: 6, title: 'O recreio mais longo', text: 'Ele jurava que o recreio podia durar para sempre. Um dia, descobriu que bastava convidar alguém para brincar.' },
         { id: 'amigo-caderno', minAffinity: 14, title: 'O caderno de desenhos', text: 'No caderno dele, cada bichinho do grupo tem uma página. A do seu está cheia de estrelas e rabiscos felizes.' }
+      ],
+      gifts: [
+        { id: 'amigo-gift10', minAffinity: 10, item: 'ball', qty: 1, coins: 35, text: 'O Amigo da escola emprestou uma bola nova.' },
+        { id: 'amigo-gift20', minAffinity: 20, item: 'yoyo', qty: 1, coins: 55, text: 'O Amigo da escola ensinou um truque de ioiô.' }
       ]
     },
     {
@@ -314,6 +328,10 @@
       stories: [
         { id: 'capitao-mapa', minAffinity: 6, title: 'O mapa com rugas', text: 'O mapa do capitão tem uma mancha de chá no lugar onde deveria estar o norte. Ele diz que é ali que as melhores histórias começam.' },
         { id: 'capitao-farol', minAffinity: 14, title: 'A luz do farol', text: 'Ele já viu o farol acender centenas de vezes, mas nunca viu duas noites iguais. Guarda cada uma num cartão diferente.' }
+      ],
+      gifts: [
+        { id: 'capitao-gift10', minAffinity: 10, item: 'postcard', qty: 2, coins: 50, text: 'O Capitão Bússola trouxe cartões postais da viagem.' },
+        { id: 'capitao-gift20', minAffinity: 20, item: 'compass', qty: 1, coins: 75, text: 'O Capitão Bússola presenteou você com uma bússola.' }
       ]
     }
   ];
@@ -392,6 +410,10 @@
     return available.length ? available : FISH.slice(0, 1);
   }
 
+  function gameForDay(date) {
+    return GAMES[dayIndex(date) % GAMES.length];
+  }
+
   var ACHIEVEMENTS = [
     { id: 'first_feed', name: 'Primeira mordida', emoji: '🍎', desc: 'Alimente seu bichinho pela primeira vez.' },
     { id: 'first_play', name: 'Diversão começa', emoji: '🎈', desc: 'Brinque com seu bichinho.' },
@@ -451,6 +473,7 @@
   ];
 
   var SPEED_LABELS = { 1: 'Normal', 3: 'Rápida', 10: 'Turbo' };
+  var NARRATION_RATE_LABELS = { 0.75: 'Lenta', 1: 'Normal', 1.25: 'Rápida', 1.5: 'Bem rápida' };
 
   var CONTRAST_LABELS = { normal: 'Padrão', high: 'Alto contraste', max: 'Contraste máximo' };
   var FONT_LABELS = { normal: 'Normal', large: 'Ampliada' };
@@ -577,6 +600,16 @@
 
   var CHANGES = [
     {
+      version: 'v44',
+      title: 'Kit de cuidados e amizades mais vivas',
+      items: [
+        'Novos saves começam com 3 Elixires da vida e 3 Remédios; pedido do Amigo da escola agora conta minigames.',
+        'Companheiros ganham presentes por afinidade e missões semanais de amizade e histórias.',
+        'Desafio diário de minigame, narração com voz e velocidade ajustáveis e foco mais estável nos modais.',
+        'Restaurador avisa quando o progresso atual é mais recente e há download do save em arquivo.'
+      ]
+    },
+    {
       version: 'v43',
       title: 'Amigos, histórias e acessibilidade',
       items: [
@@ -635,7 +668,7 @@
   ];
 
   global.TamaData = {
-    VERSION: 'v43',
+    VERSION: 'v44',
     CHANGES: CHANGES,
     STAGES: STAGES,
     SPECIES: SPECIES,
@@ -664,6 +697,7 @@
     dealsForDay: dealsForDay,
     TUTORIAL: TUTORIAL,
     SPEED_LABELS: SPEED_LABELS,
+    NARRATION_RATE_LABELS: NARRATION_RATE_LABELS,
     CONTRAST_LABELS: CONTRAST_LABELS,
     FONT_LABELS: FONT_LABELS,
     SHORTCUT_LABELS: SHORTCUT_LABELS,
@@ -680,6 +714,7 @@
     questsForWeek: questsForWeek,
     eventForDay: eventForDay,
     fishForDay: fishForDay,
+    gameForDay: gameForDay,
     item: function (id) {
       return ITEMS.find(function (item) { return item.id === id; }) || null;
     },
