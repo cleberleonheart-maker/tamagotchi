@@ -406,6 +406,114 @@
     startTimer(parts, 20, maxSpawn, function () { return Math.min(score, maxSpawn); });
   }
 
+  var QUIZ = [
+    { q: 'O que fazer quando a fome está baixa?', options: ['Alimentar', 'Dar banho', 'Fazer dormir'], answer: 0 },
+    { q: 'Qual item cura uma doença?', options: ['Bola', 'Remédio', 'Perfume'], answer: 1 },
+    { q: 'O que acontece ao brincar?', options: ['Sobe humor e XP', 'Cai a idade', 'Some o inventário'], answer: 0 },
+    { q: 'Como deixar o quarto mais aconchegante?', options: ['Colocar uma decoração', 'Vender o bichinho', 'Pausar o tempo'], answer: 0 },
+    { q: 'O que a horta produz?', options: ['Moedas instantâneas', 'Ingredientes com o tempo', 'Figurinhas'], answer: 1 },
+    { q: 'Qual clima reduz dano em batalhas?', options: ['Dia nevado', 'Chuva', 'Feira'], answer: 1 },
+    { q: 'Para que serve o elixir?', options: ['Reanimar estado crítico', 'Limpar o quarto', 'Aumentar level'], answer: 0 },
+    { q: 'O que o modo foco recompensa?', options: ['Sono', 'Moedas e XP', 'Comida'], answer: 1 }
+  ];
+
+  function playQuiz(token, parts) {
+    var index = 0;
+    var score = 0;
+    var maxScore = QUIZ.length;
+    var answered = false;
+    var timeouts = [];
+    parts.arena.classList.add('quiz-arena');
+
+    function render() {
+      if (!alive(token)) return;
+      answered = false;
+      var question = QUIZ[index];
+      parts.arena.innerHTML =
+        '<div class="quiz-card">' +
+          '<small>Pergunta ' + (index + 1) + ' de ' + maxScore + '</small>' +
+          '<h3>' + esc(question.q) + '</h3>' +
+          '<div class="quiz-options">' + question.options.map(function (option, position) {
+            return '<button type="button" class="quiz-option" data-answer="' + position + '" aria-label="Opção ' + (position + 1) + ': ' + esc(option) + '"><kbd>' + (position + 1) + '</kbd> ' + esc(option) + '</button>';
+          }).join('') + '</div>' +
+        '</div>';
+      Array.prototype.forEach.call(parts.arena.querySelectorAll('.quiz-option'), function (button) {
+        button.addEventListener('click', function () { choose(Number(button.dataset.answer)); });
+      });
+    }
+
+    function choose(position) {
+      if (!alive(token) || answered || !QUIZ[index]) return;
+      answered = true;
+      var correct = position === QUIZ[index].answer;
+      if (correct) {
+        score += 1;
+        if (global.TamaAudio) global.TamaAudio.play('happy');
+      } else if (global.TamaAudio) global.TamaAudio.play('error');
+      setScore(parts, score);
+      index += 1;
+      if (index >= QUIZ.length) { close(score, maxScore); return; }
+      var timer = setTimeout(render, 420);
+      timeouts.push(timer);
+    }
+
+    keyHandler = function (event) {
+      var position = Number(event.key) - 1;
+      if (position >= 0 && position < 3) {
+        event.preventDefault();
+        choose(position);
+      }
+    };
+    addCleanup(function () { timeouts.forEach(clearTimeout); timeouts = []; });
+    startTimer(parts, 30, maxScore, function () { return Math.min(score, maxScore); });
+    render();
+  }
+
+  function playBubble(token, parts) {
+    var score = 0;
+    var maxScore = 18;
+    var target = 1;
+    var order = [];
+    parts.arena.classList.add('bubble-arena');
+
+    function render() {
+      if (!alive(token)) return;
+      order = [1, 2, 3, 4, 5, 6, 7, 8, 9].sort(function () { return Math.random() - 0.5; });
+      parts.arena.innerHTML =
+        '<div class="bubble-target" role="status">Próxima bolha: <b>' + target + '</b></div>' +
+        '<div class="bubble-grid">' + order.map(function (value) {
+          return '<button type="button" class="bubble" data-bubble="' + value + '" aria-label="Bolha ' + value + '"><kbd>' + value + '</kbd></button>';
+        }).join('') + '</div>';
+      Array.prototype.forEach.call(parts.arena.querySelectorAll('.bubble'), function (button) {
+        button.addEventListener('click', function () { pop(Number(button.dataset.bubble)); });
+      });
+    }
+
+    function pop(value) {
+      if (!alive(token)) return;
+      if (value !== target) {
+        if (global.TamaAudio) global.TamaAudio.play('error');
+        return;
+      }
+      score += 1;
+      target = target % 9 + 1;
+      setScore(parts, score);
+      if (global.TamaAudio) global.TamaAudio.play('click');
+      if (score >= maxScore) { close(score, maxScore); return; }
+      render();
+    }
+
+    keyHandler = function (event) {
+      var value = Number(event.key);
+      if (value >= 1 && value <= 9) {
+        event.preventDefault();
+        pop(value);
+      }
+    };
+    startTimer(parts, 25, maxScore, function () { return Math.min(score, maxScore); });
+    render();
+  }
+
   function esc(value) {
     return String(value).replace(/[&<>"']/g, function (ch) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
@@ -426,13 +534,18 @@
       catch: ' Mouse/toque: clique nas comidas. Teclado: ← → para escolher, Enter para pegar.',
       tap: ' Mouse/toque: toque nos corações. Teclado: teclas 1 a 9.',
       memory: ' Mouse/toque: clique nas cores. Teclado: teclas 1 a 4.',
-      fish: ' Mouse/toque: clique nos peixes. Teclado: teclas 1 a 5.'
+      fish: ' Mouse/toque: clique nos peixes. Teclado: teclas 1 a 5.',
+      quiz: ' Mouse/toque: escolha uma resposta. Teclado: teclas 1 a 3.',
+      bubble: ' Mouse/toque: clique na bolha certa. Teclado: teclas 1 a 9.'
     };
-    var parts = shell(definition.emoji + ' ' + definition.name, definition.desc + (hints[id] || ''), id === 'memory' ? 45 : 20);
+    var seconds = id === 'memory' ? 45 : id === 'quiz' ? 30 : id === 'bubble' ? 25 : 20;
+    var parts = shell(definition.emoji + ' ' + definition.name, definition.desc + (hints[id] || ''), seconds);
     if (id === 'catch') playCatch(token, parts);
     else if (id === 'tap') playTap(token, parts);
     else if (id === 'memory') playMemory(token, parts);
     else if (id === 'fish') playFish(token, parts);
+    else if (id === 'quiz') playQuiz(token, parts);
+    else if (id === 'bubble') playBubble(token, parts);
     else { close(); return false; }
     if (parts.arena.focus) parts.arena.focus();
     return true;

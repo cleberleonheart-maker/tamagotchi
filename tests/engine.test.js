@@ -33,9 +33,12 @@ function test(name, fn) {
 test('catálogo possui espécies, itens, fases e conquistas', () => {
   assert.equal(D.SPECIES.length, 12);
   assert.equal(D.STAGES.length, 6);
-  assert.ok(D.ITEMS.length >= 58);
-  assert.ok(D.ACHIEVEMENTS.length >= 34);
-  assert.equal(D.WALKS.length, 6);
+  assert.ok(D.ITEMS.length >= 60);
+  assert.ok(D.ACHIEVEMENTS.length >= 38);
+  assert.equal(D.WALKS.length, 8);
+  assert.equal(D.GAMES.length, 6);
+  assert.equal(D.VISITORS.length, 4);
+  assert.equal(D.COMPANIONS.length, 4);
   assert.equal(D.ENEMIES.length, 6);
   assert.equal(D.item('apple').name, 'Maçã');
   assert.ok(D.species('panda').names.length === D.STAGES.length);
@@ -57,6 +60,14 @@ test('catálogo possui espécies, itens, fases e conquistas', () => {
   assert.ok(D.item('compass'));
   assert.ok(D.item('bell'));
   assert.ok(D.item('shell'));
+  assert.ok(D.item('berry'));
+  assert.ok(D.item('postcard'));
+  assert.ok(D.GAMES.some((game) => game.id === 'quiz'));
+  assert.ok(D.GAMES.some((game) => game.id === 'bubble'));
+  assert.ok(D.walk('river'));
+  assert.ok(D.walk('lighthouse'));
+  assert.ok(D.CONTRAST_LABELS.max);
+  assert.equal(D.SHORTCUT_OPTIONS.find((option) => option.key === 'feed').default, 'Space');
   assert.ok(D.species('coala').names.length === D.STAGES.length);
   assert.ok(D.species('baleia').colors.length === 3);
 });
@@ -1217,6 +1228,69 @@ test('buffs e novos contadores sobrevivem ao save', () => {
   assert.equal(loaded.totals.trades, 2);
   assert.equal(loaded.totals.fished, 4);
   assert.equal(E.activeBuffs(loaded).length, 1);
+});
+
+test('configurações v43 mantêm narração, contraste máximo e atalhos válidos', () => {
+  const state = fresh();
+  assert.equal(state.settings.narration, false);
+  assert.deepEqual(state.settings.shortcuts, { feed: 'Space', shop: 'KeyC', games: 'KeyJ', help: 'Slash' });
+
+  const raw = JSON.parse(JSON.stringify(state));
+  raw.settings.contrast = 'max';
+  raw.settings.narration = true;
+  raw.settings.shortcuts = { feed: 'KeyF', shop: 'Bogus', games: 'KeyG', help: 'Slash' };
+  const loaded = E.sanitizeSave(raw);
+  assert.equal(loaded.settings.contrast, 'max');
+  assert.equal(loaded.settings.narration, true);
+  assert.equal(loaded.settings.shortcuts.feed, 'KeyF');
+  assert.equal(loaded.settings.shortcuts.shop, 'KeyC');
+  assert.equal(loaded.settings.shortcuts.games, 'KeyG');
+});
+
+test('companheiros recorrentes concluem pedidos e desbloqueiam histórias', () => {
+  const state = fresh();
+  const time = Date.now();
+  E.ensureCompanions(state, time);
+  const companion = D.COMPANIONS[0];
+  const friend = E.companionFriend(state, companion.id);
+  const request = companion.requests.find((item) => item.id === friend.request.id);
+  const coins = state.coins;
+  const completed = E.bumpCompanionRequests(state, request.key, request.target, time);
+  assert.equal(completed.length, 1);
+  assert.equal(state.totals.companionRequests, 1);
+  assert.ok(friend.affinity >= request.affinity);
+  assert.ok(state.coins > coins);
+  assert.ok(friend.stories[companion.stories[0].id]);
+  const story = E.readCompanionStory(state, companion.id, companion.stories[0].id);
+  assert.equal(story.firstRead, true);
+  assert.equal(E.readCompanionStory(state, companion.id, companion.stories[0].id).firstRead, false);
+});
+
+test('conquistas v43 reconhecem passeios, visitas e amizades', () => {
+  const state = fresh();
+  state.totals.walks = 10;
+  state.totals.visits = 3;
+  state.totals.companionRequests = 5;
+  state.totals.companionStories = 3;
+  E.checkAchievements(state, E.activePet(state));
+  assert.ok(state.achievements.walks_10);
+  assert.ok(state.achievements.visitor_3);
+  assert.ok(state.achievements.request_5);
+  assert.ok(state.achievements.story_3);
+});
+
+test('backup automático sobrevive ao save e pode ser restaurado', () => {
+  const state = fresh();
+  state.coins = 777;
+  assert.equal(E.autoBackup(state), true);
+  const info = E.autoBackupInfo();
+  assert.equal(info.name, 'Teste');
+  assert.equal(info.coins, 777);
+  const restored = E.loadAutoBackup();
+  assert.equal(restored.coins, 777);
+  assert.equal(E.activePet(restored).name, 'Teste');
+  assert.equal(E.clearAutoBackup(), true);
+  assert.equal(E.autoBackupInfo(), null);
 });
 
 console.log('\n' + passed + ' testes passaram.');

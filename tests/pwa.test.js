@@ -60,4 +60,27 @@ test('APIs de UI usadas pelo app estão exportadas', () => {
   used.forEach((name) => assert.ok(new RegExp('\\b' + name + ':').test(exportBlock), 'UI.' + name + ' não exportada'));
 });
 
+test('app não referencia alias U de UI', () => {
+  const app = read('js/app.js');
+  assert.doesNotMatch(app, /\bU\./);
+});
+
+test('v43 expõe companheiros, restauração e recursos de acessibilidade', () => {
+  const html = read('index.html');
+  const css = read('styles.css');
+  const ui = read('js/ui.js');
+  const shortcuts = D.SHORTCUT_OPTIONS.map((option) => option.key);
+  assert.ok(html.includes('data-tab="companions"'));
+  assert.ok(html.includes('data-action="restore-save"'));
+  assert.ok(css.includes("body[data-contrast='max']"));
+  assert.ok(css.includes('.companions-grid'));
+  assert.ok(css.includes('.quiz-arena'));
+  assert.ok(css.includes('.bubble-arena'));
+  assert.ok(D.CONTRAST_LABELS.max);
+  assert.equal(shortcuts.length, 4);
+  assert.ok(ui.includes('function narrate('));
+  assert.ok(ui.includes('function showRestore('));
+  assert.ok(ui.includes('function showStory('));
+});
+
 console.log(passed + ' testes de PWA passaram.');

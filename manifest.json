@@ -1,6 +1,7 @@
 {
   "name": "TamaVida — Seu Tamagotchi",
   "short_name": "TamaVida",
+  "id": "./",
   "description": "Cuide do seu bichinho virtual: alimente, brinque, treine, evolua e colecione conquistas. Funciona offline.",
   "lang": "pt-BR",
   "dir": "ltr",
@@ -12,6 +13,7 @@
   "background_color": "#120d1f",
   "theme_color": "#7c5cff",
   "categories": ["games", "entertainment", "lifestyle"],
+  "prefer_related_applications": false,
   "icons": [
     { "src": "icons/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },

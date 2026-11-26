@@ -16,12 +16,22 @@
   var unlockedCache = [];
   var questCache = [];
   var weeklyCache = [];
+  var companionsCache = 0;
   var installPrompt = null;
   var pendingUpdateWorker = null;
   var hadServiceWorkerController = false;
   var refreshingAfterUpdate = false;
+  var lastAutoBackupAt = 0;
 
-  function persist() { E.save(state); }
+  function persist() {
+    if (!E.save(state)) return;
+    if (!state || !state.pets || !state.pets.length) return;
+    var info = E.autoBackupInfo();
+    if (!lastAutoBackupAt) lastAutoBackupAt = info ? Math.min(info.savedAt, Date.now()) : 0;
+    if (!info || Date.now() - lastAutoBackupAt > 10 * 60 * 1000) {
+      if (E.autoBackup(state)) lastAutoBackupAt = Date.now();
+    }
+  }
 
   function syncUpdateButton(available) {
     var button = document.getElementById('updateBtn');
@@ -371,6 +381,7 @@
     unlockedCache = Object.keys(state.achievements);
     questCache = (state.daily && state.daily.quests || []).map(function (quest) { return quest.claimed; });
     weeklyCache = (state.weekly && state.weekly.quests || []).map(function (quest) { return quest.claimed; });
+    companionsCache = state.totals ? state.totals.companionRequests : 0;
     persist();
   }
 
@@ -396,6 +407,13 @@
     achievementDiff(options.achievementsBefore || unlockedCache, Object.keys(state.achievements));
     questDiff(options.questsBefore || questCache);
     weeklyDiff(options.weeklyBefore || weeklyCache);
+    var companionsBefore = typeof options.companionsBefore === 'number' ? options.companionsBefore : companionsCache;
+    if (state.totals && state.totals.companionRequests > companionsBefore) {
+      setTimeout(function () {
+        UI.toast('🤝 Pedido de companheiro concluído! Um presente chegou.', 'good');
+        A.play('coin');
+      }, 750);
+    }
     refresh(options);
     return result;
   }
@@ -405,6 +423,7 @@
       before: Object.keys(state.achievements),
       questsBefore: (state.daily && state.daily.quests || []).map(function (quest) { return quest.claimed; }),
       weeklyBefore: (state.weekly && state.weekly.quests || []).map(function (quest) { return quest.claimed; }),
+      companionsBefore: state.totals ? state.totals.companionRequests : 0,
       result: fn()
     };
   }
@@ -604,7 +623,7 @@
       currentFilter = data.filter || 'all';
       refresh({ tab: currentTab, filter: currentFilter });
       var card = document.getElementById('tabsCard');
-      if (card) card.scrollIntoView({ behavior: U.scrollBehavior(state), block: 'start' });
+      if (card) card.scrollIntoView({ behavior: UI.scrollBehavior(state), block: 'start' });
       A.play('click');
       return { ok: true };
     }
@@ -613,14 +632,14 @@
       currentTab = 'shop';
       refresh({ tab: currentTab });
       var card2 = document.getElementById('tabsCard');
-      if (card2) card2.scrollIntoView({ behavior: U.scrollBehavior(state), block: 'start' });
+      if (card2) card2.scrollIntoView({ behavior: UI.scrollBehavior(state), block: 'start' });
       A.play('click');
       return { ok: true };
     }
 
     if (action === 'go-games' || action === 'open-games') {
       var world = document.getElementById('sectionWorld');
-      if (world) world.scrollIntoView({ behavior: U.scrollBehavior(state), block: 'start' });
+      if (world) world.scrollIntoView({ behavior: UI.scrollBehavior(state), block: 'start' });
       A.play('click');
       return { ok: true };
     }
@@ -663,7 +682,7 @@
     }
 
     if (action === 'help') {
-      UI.showHelp();
+      UI.showHelp(state);
       return { ok: true };
     }
 
@@ -681,9 +700,14 @@
             }
           }
           if (key === 'reminderMorning' || key === 'reminderEvening' || key.indexOf('routine:') === 0) scheduleReminders();
-          if (key === 'theme' || key === 'contrast' || key === 'fontSize' || key === 'reduceMotion' || key === 'visualCues') UI.applyTheme(state);
+          if (key === 'theme' || key === 'contrast' || key === 'fontSize' || key === 'reduceMotion' || key === 'visualCues' || key === 'narration') UI.applyTheme(state);
           if (key === 'theme') syncClock();
           UI.renderTopbar(state);
+          persist();
+        },
+        onShortcut: function (key, value) {
+          state.settings.shortcuts = state.settings.shortcuts || {};
+          state.settings.shortcuts[key] = value;
           persist();
         },
         onSlotSave: saveToSlot,
@@ -710,6 +734,32 @@
         scheduleReminders();
         UI.toast('Progresso importado com sucesso!', 'good');
       });
+      return { ok: true };
+    }
+
+    if (action === 'restore-save') {
+      UI.showRestore(function (imported) {
+        state = imported;
+        unlockedCache = Object.keys(state.achievements);
+        questCache = (state.daily && state.daily.quests || []).map(function (quest) { return quest.claimed; });
+        weeklyCache = (state.weekly && state.weekly.quests || []).map(function (quest) { return quest.claimed; });
+        A.setEnabled(state.settings.sound);
+        A.setMusic(state.settings.music);
+        UI.applyTheme(state);
+        UI.closeModal();
+        refresh();
+        scheduleReminders();
+        UI.toast('Progresso restaurado com sucesso!', 'good');
+      });
+      return { ok: true };
+    }
+
+    if (action === 'read-story') {
+      var story = E.readCompanionStory(state, data.companion, data.story);
+      if (!story) return { ok: false, msg: 'História indisponível.' };
+      UI.showStory(story);
+      A.play('happy');
+      refresh();
       return { ok: true };
     }
 
@@ -870,7 +920,7 @@
     if (!target) return;
     if (target.dataset.scroll) {
       var section = document.getElementById(target.dataset.scroll);
-      if (section) section.scrollIntoView({ behavior: U.scrollBehavior(state), block: 'start' });
+      if (section) section.scrollIntoView({ behavior: UI.scrollBehavior(state), block: 'start' });
       $$('.mobile-nav button').forEach(function (button) { button.classList.toggle('active', button === target); });
       return;
     }
@@ -889,24 +939,34 @@
       kind: target.dataset.kind,
       item: target.dataset.item,
       game: target.dataset.game,
-        id: target.dataset.id,
-        filter: target.dataset.filter,
-        crop: target.dataset.crop,
-        plot: target.dataset.plot,
-        recipe: target.dataset.recipe,
-        dish: target.dataset.dish,
-        trade: target.dataset.trade,
-
-        place: target.dataset.place,
-        enemy: target.dataset.enemy,
-        move: target.dataset.move,
-        mode: target.dataset.mode,
-        minutes: target.dataset.minutes,
-        restart: target.dataset.restart === 'true'
+      id: target.dataset.id,
+      filter: target.dataset.filter,
+      crop: target.dataset.crop,
+      plot: target.dataset.plot,
+      recipe: target.dataset.recipe,
+      dish: target.dataset.dish,
+      trade: target.dataset.trade,
+      place: target.dataset.place,
+      enemy: target.dataset.enemy,
+      move: target.dataset.move,
+      mode: target.dataset.mode,
+      minutes: target.dataset.minutes,
+      companion: target.dataset.companion,
+      story: target.dataset.story,
+      restart: target.dataset.restart === 'true'
       });
   }
 
   function $$(selector) { return Array.prototype.slice.call(document.querySelectorAll(selector)); }
+
+  function matchesShortcut(action, event) {
+    var bindings = (state && state.settings && state.settings.shortcuts) || {};
+    var code = bindings[action];
+    if (!code) return false;
+    if (code === 'Space') return event.code === 'Space';
+    if (code === 'Slash') return event.code === 'Slash' || event.key === '?';
+    return event.code === code || String(event.key || '').toUpperCase() === code.replace('Key', '');
+  }
 
   function handleKeyboard(event) {
     var tag = (event.target && event.target.tagName || '').toLowerCase();
@@ -918,7 +978,7 @@
       return;
     }
     if (editable || overlay) return;
-    if (event.key === '?' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    if (!event.ctrlKey && !event.metaKey && !event.altKey && matchesShortcut('help', event)) {
       event.preventDefault();
       perform('help');
       return;
@@ -930,7 +990,7 @@
       if (index !== -1) {
         var next = tabs[(index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length];
         next.focus();
-        next.scrollIntoView({ behavior: U.scrollBehavior(state), block: 'nearest', inline: 'nearest' });
+        next.scrollIntoView({ behavior: UI.scrollBehavior(state), block: 'nearest', inline: 'nearest' });
         next.click();
       }
       return;
@@ -945,12 +1005,13 @@
     }
     if (['input', 'textarea', 'select', 'button', 'a'].indexOf(tag) !== -1) return;
     if (event.target && event.target.isContentEditable) return;
-    if (event.code === 'Space') {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (matchesShortcut('feed', event)) {
       event.preventDefault();
       perform('free', { kind: 'pet' });
-    } else if (event.key === 'c' || event.key === 'C') {
+    } else if (matchesShortcut('shop', event)) {
       perform('open-shop');
-    } else if (event.key === 'j' || event.key === 'J') {
+    } else if (matchesShortcut('games', event)) {
       var games = D.GAMES;
       startGame(games[Math.floor(Math.random() * games.length)].id);
     }

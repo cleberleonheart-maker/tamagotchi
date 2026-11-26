@@ -140,6 +140,7 @@
     document.body.dataset.font = settings.fontSize || 'normal';
     document.body.dataset.motion = settings.reduceMotion ? 'reduce' : 'normal';
     document.body.dataset.cues = settings.visualCues === false ? 'off' : 'on';
+    document.body.dataset.narration = settings.narration ? 'on' : 'off';
     var pill = $('#dayPill');
     if (pill) pill.textContent = night ? '🌙 Noite' : '☀️ Dia';
     var celestial = $('#celestial');
@@ -151,7 +152,7 @@
       screen.dataset.event = eventId;
     }
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', night ? '#120d1f' : '#7c5cff');
+    if (meta) meta.setAttribute('content', settings.contrast === 'max' ? '#000000' : night ? '#120d1f' : '#7c5cff');
   }
 
   function spriteMarkup(pet) {
@@ -626,6 +627,43 @@
     }).join('') + '</div>';
   }
 
+  function companionsMarkup(state) {
+    var friends = (state.companions && state.companions.friends) || {};
+    var known = DATA.COMPANIONS.filter(function (companion) {
+      var friend = friends[companion.id];
+      return friend && friend.visits > 0;
+    }).length;
+    var header = '<div class="adventure-header"><div><b>🤝 Companheiros</b>' +
+      '<small>Visitas viram amizade. Cada ajuda rende presentes e desbloqueia histórias.</small></div>' +
+      '<span>💚 ' + known + '/' + DATA.COMPANIONS.length + ' amigos</span></div>';
+    return header + '<div class="companions-grid">' + DATA.COMPANIONS.map(function (companion) {
+      var friend = friends[companion.id] || { affinity: 0, visits: 0, request: null, stories: {} };
+      var affinity = Math.min(100, Math.round((friend.affinity || 0) * 5));
+      var request = friend.request && companion.requests.find(function (item) { return item.id === friend.request.id; });
+      var requestHtml = request
+        ? '<div class="companion-request">' +
+            '<b>' + (friend.request.claimed ? '✅ Pedido concluído hoje' : '📌 Pedido de hoje') + '</b>' +
+            '<small>' + esc(request.text) + '</small>' +
+            '<div class="mini-progress"><i style="width:' + Math.min(100, Math.round((friend.request.progress || 0) / request.target * 100)) + '%"></i></div>' +
+            '<small>' + (friend.request.progress || 0) + '/' + request.target + '</small>' +
+          '</div>'
+        : '';
+      var stories = companion.stories.map(function (story) {
+        var unlocked = friend.stories && friend.stories[story.id];
+        return unlocked
+          ? '<button class="companion-story" type="button" data-action="read-story" data-companion="' + companion.id + '" data-story="' + story.id + '">' +
+              '📖 ' + esc(story.title) + (unlocked.readAt ? ' <small>lida</small>' : ' <small>nova!</small>') + '</button>'
+          : '<div class="companion-story locked">🔒 ' + esc(story.title) + ' <small>amizade ' + story.minAffinity + '</small></div>';
+      }).join('');
+      return '<div class="companion-card"><div class="companion-top"><span class="companion-emoji">' + companion.emoji + '</span>' +
+        '<div><b>' + esc(companion.name) + '</b><small>' + esc(companion.trait) + '</small></div>' +
+        '<span class="companion-level">' + (friend.affinity || 0) + '💚</span></div>' +
+        '<div class="mini-progress"><i style="width:' + affinity + '%"></i></div>' +
+        '<small>' + (friend.visits || 0) + ' visita(s) • última visita ' + (friend.lastDay ? esc(friend.lastDay) : '—') + '</small>' +
+        requestHtml + '<div class="companion-stories">' + stories + '</div></div>';
+    }).join('') + '</div>';
+  }
+
   function adventureMarkup(state) {
     var pet = E.activePet(state);
     var adventure = state.adventure || { walks: 0, battles: 0, wins: 0, battle: null };
@@ -814,6 +852,7 @@
     else if (activeTab === 'trades') panel.innerHTML = tradeMarkup(state);
     else if (activeTab === 'stickers') panel.innerHTML = stickerMarkup(state);
     else if (activeTab === 'adventure') panel.innerHTML = adventureMarkup(state);
+    else if (activeTab === 'companions') panel.innerHTML = companionsMarkup(state);
     else if (activeTab === 'garden') panel.innerHTML = gardenMarkup(state);
     else if (activeTab === 'ranking') panel.innerHTML = rankingMarkup(state);
     else if (activeTab === 'moments') {
@@ -1097,6 +1136,18 @@
     setTimeout(function () { if (sprite.parentNode) delete sprite.dataset.action; }, kind === 'eat' ? 1500 : 1300);
   }
 
+  function narrate(message) {
+    try {
+      if (!global.speechSynthesis || !global.SpeechSynthesisUtterance || document.body.dataset.narration !== 'on') return;
+      global.speechSynthesis.cancel();
+      var utterance = new global.SpeechSynthesisUtterance(String(message).slice(0, 160));
+      utterance.lang = 'pt-BR';
+      utterance.rate = 1;
+      utterance.volume = 0.85;
+      global.speechSynthesis.speak(utterance);
+    } catch (error) { /* noop */ }
+  }
+
   function toast(message, type) {
     if (!toastRoot) return;
     var node = document.createElement('div');
@@ -1104,6 +1155,7 @@
     node.setAttribute('role', type === 'bad' || type === 'critical' ? 'alert' : 'status');
     node.textContent = message;
     toastRoot.appendChild(node);
+    narrate(message);
     setTimeout(function () {
       node.classList.add('out');
       setTimeout(function () { node.remove(); }, 320);
@@ -1269,15 +1321,19 @@
     });
   }
 
-  function showHelp() {
+  function showHelp(state) {
+    var shortcuts = (state && state.settings && state.settings.shortcuts) || {};
+    function shortcutRow(key, label) {
+      return '<div class="help-row"><span><kbd>' + esc(DATA.SHORTCUT_LABELS[shortcuts[key]] || shortcuts[key] || '—') + '</kbd></span><span>' + label + '</span></div>';
+    }
     openModal({
       title: '❓ Ajuda rápida',
       sub: 'Atalhos e dicas do TamaVida',
       body: '<div class="help-grid">' +
-        '<div class="help-row"><span><kbd>Espaço</kbd></span><span>Fazer carinho</span></div>' +
-        '<div class="help-row"><span><kbd>C</kbd></span><span>Abrir loja</span></div>' +
-        '<div class="help-row"><span><kbd>J</kbd></span><span>Minigame aleatório</span></div>' +
-        '<div class="help-row"><span><kbd>?</kbd></span><span>Abrir esta ajuda</span></div>' +
+        shortcutRow('feed', 'Fazer carinho') +
+        shortcutRow('shop', 'Abrir loja') +
+        shortcutRow('games', 'Minigame aleatório') +
+        shortcutRow('help', 'Abrir esta ajuda') +
         '<div class="help-row"><span><kbd>Esc</kbd></span><span>Fechar janela/minigame</span></div>' +
         '<div class="help-row"><span><kbd>←</kbd> <kbd>→</kbd></span><span>Navegar entre abas</span></div>' +
         '</div>' +
@@ -1306,6 +1362,8 @@
     E.ensureRoutine(state);
     var speed = Number(state.settings.speed) || 3;
     var theme = state.settings.theme || 'auto';
+    var shortcuts = state.settings.shortcuts || {};
+    function keyName(key) { return esc(DATA.SHORTCUT_LABELS[shortcuts[key]] || shortcuts[key] || '—'); }
     var rows = [
       { key: 'sound', icon: '🔊', title: 'Efeitos sonoros', sub: 'Sons de ações e conquistas' },
       { key: 'music', icon: '🎵', title: 'Música ambiente', sub: 'Melodia suave em segundo plano' },
@@ -1313,7 +1371,8 @@
       { key: 'notifications', icon: '🔔', title: 'Notificações', sub: 'Avisos quando precisar de cuidados' },
       { key: 'vibration', icon: '📳', title: 'Vibração', sub: 'Feedback tátil em ações (quando suportado)' },
       { key: 'reduceMotion', icon: '🎞️', title: 'Reduzir movimento', sub: 'Desliga animações e transições' },
-      { key: 'visualCues', icon: '👁️', title: 'Avisos visuais de som', sub: 'Mostra um sinal quando há efeito sonoro' }
+      { key: 'visualCues', icon: '👁️', title: 'Avisos visuais de som', sub: 'Mostra um sinal quando há efeito sonoro' },
+      { key: 'narration', icon: '🗣️', title: 'Narração de eventos', sub: 'Fala conquistas, avisos e recompensas (quando suportado)' }
     ];
     openModal({
       title: '⚙️ Configurações',
@@ -1343,13 +1402,22 @@
       '<select id="fontSelect" style="border:1px solid var(--border-strong);border-radius:9px;background:var(--surface-2);color:var(--text);padding:6px">' +
         Object.keys(DATA.FONT_LABELS).map(function (key) { return '<option value="' + key + '"' + (key === state.settings.fontSize ? ' selected' : '') + '>' + DATA.FONT_LABELS[key] + '</option>'; }).join('') +
       '</select></div>' +
+      '<div class="settings-section"><b>⌨️ Atalhos personalizados</b><small>Escolha as teclas das ações rápidas</small>' +
+      DATA.SHORTCUT_OPTIONS.map(function (option) {
+        var current = state.settings.shortcuts && state.settings.shortcuts[option.key] || option.default;
+        return '<div class="settings-row"><div><b>' + esc(option.label) + '</b><small>Tecla atual: ' + esc(DATA.SHORTCUT_LABELS[current] || current) + '</small></div>' +
+          '<select data-shortcut="' + option.key + '" style="border:1px solid var(--border-strong);border-radius:9px;background:var(--surface-2);color:var(--text);padding:6px">' +
+          Object.keys(DATA.SHORTCUT_LABELS).map(function (code) {
+            return '<option value="' + code + '"' + (code === current ? ' selected' : '') + '>' + esc(DATA.SHORTCUT_LABELS[code]) + '</option>';
+          }).join('') + '</select></div>';
+      }).join('') + '</div>' +
       '<div class="slots-section"><b>💾 Slots de salvamento</b><small>Armazene até 3 progressos separados neste dispositivo.</small>' +
         '<div class="slot-list">' + E.listSlots().map(function (slot) {
           return '<div class="slot-row"><span><b>Slot ' + slot.index + '</b><small>' + esc(slot.name) + ' • 🪙 ' + slot.coins + (slot.savedAt ? ' • ' + fmtTime(slot.savedAt) : '') + '</small></span>' +
             '<button class="mini-btn" type="button" data-slot-save="' + slot.index + '">Salvar</button>' +
             '<button class="mini-btn" type="button" data-slot-load="' + slot.index + '"' + (slot.savedAt ? '' : ' disabled') + '>Carregar</button></div>';
         }).join('') + '</div></div>' +
-        '<p class="muted" style="margin-top:12px">Atalhos: <b>Espaço</b> faz carinho, <b>C</b> abre a loja, <b>J</b> inicia um minigame, <b>?</b> abre ajuda, <b>Esc</b> fecha janelas.</p>' +
+        '<p class="muted" style="margin-top:12px">Atalhos: <b>' + keyName('feed') + '</b> faz carinho, <b>' + keyName('shop') + '</b> abre a loja, <b>' + keyName('games') + '</b> inicia um minigame, <b>' + keyName('help') + '</b> abre ajuda, <b>Esc</b> fecha janelas.</p>' +
         '<p class="muted" style="margin-top:10px">Versão: <b>' + DATA.VERSION + '</b></p>' +
         '<div class="data-actions" style="margin-top:10px"><button class="ghost-btn" type="button" data-check-update>⬆️ Verificar atualização</button><button class="ghost-btn" type="button" data-changelog>📜 Ver novidades</button></div>',
       actions: [{ label: 'Pronto', cls: 'primary' }],
@@ -1384,6 +1452,14 @@
         $('#fontSelect', modal).addEventListener('change', function (event) {
           state.settings.fontSize = event.target.value;
           if (handlers && handlers.onChange) handlers.onChange('fontSize', state.settings.fontSize);
+        });
+        $$('[data-shortcut]', modal).forEach(function (select) {
+          select.addEventListener('change', function (event) {
+            var key = event.target.dataset.shortcut;
+            state.settings.shortcuts = state.settings.shortcuts || {};
+            state.settings.shortcuts[key] = event.target.value;
+            if (handlers && handlers.onShortcut) handlers.onShortcut(key, event.target.value);
+          });
         });
         $$('[data-slot-save]', modal).forEach(function (button) {
           button.addEventListener('click', function () {
@@ -1519,6 +1595,80 @@
     });
   }
 
+  function showStory(payload) {
+    if (!payload) return;
+    openModal({
+      title: '📖 ' + esc(payload.story.title),
+      sub: 'História de ' + esc(payload.companion.name),
+      body: '<p>' + esc(payload.story.text) + '</p>',
+      actions: [{ label: 'Fechar', cls: 'primary' }]
+    });
+  }
+
+  function showRestoreConfirm(imported, label, onRestore) {
+    var pet = E.activePet(imported);
+    openModal({
+      title: '♻️ Confirmar restauração',
+      sub: 'Confira o progresso antes de substituir o atual.',
+      body: '<div class="summary-grid">' +
+        '<div class="summary-row"><span>Origem</span><b>' + esc(label) + '</b></div>' +
+        '<div class="summary-row"><span>Bichinho</span><b>' + esc(pet ? pet.name : '—') + '</b></div>' +
+        '<div class="summary-row"><span>Moedas</span><b>🪙 ' + imported.coins + '</b></div>' +
+        '<div class="summary-row"><span>Conquistas</span><b>' + Object.keys(imported.achievements || {}).length + '</b></div>' +
+        '</div><p class="muted" style="margin-top:10px">O progresso atual será substituído. Os slots não são apagados.</p>',
+      actions: [
+        { label: 'Cancelar', cls: 'ghost' },
+        { label: 'Restaurar', cls: 'primary', onClick: function () {
+          if (onRestore) onRestore(imported);
+          return false;
+        } }
+      ]
+    });
+  }
+
+  function showRestore(onRestore) {
+    var sources = [];
+    var auto = E.autoBackupInfo();
+    if (auto) {
+      sources.push({
+        id: 'auto',
+        label: 'Backup automático',
+        detail: (auto.name || 'Bichinho') + ' • 🪙 ' + auto.coins + ' • ' + fmtTime(auto.savedAt)
+      });
+    }
+    E.listSlots().forEach(function (slot) {
+      if (!slot.savedAt) return;
+      sources.push({
+        id: 'slot:' + slot.index,
+        label: 'Slot ' + slot.index,
+        detail: slot.name + ' • 🪙 ' + slot.coins + ' • ' + fmtTime(slot.savedAt)
+      });
+    });
+    var body = sources.length
+      ? '<p class="muted">Escolha uma origem para revisar antes de restaurar.</p><div class="restore-list">' + sources.map(function (source) {
+          return '<button class="restore-option" type="button" data-restore="' + source.id + '"><b>' + esc(source.label) + '</b><small>' + esc(source.detail) + '</small></button>';
+        }).join('') + '</div>'
+      : '<div class="empty-state"><span class="empty-emoji">💾</span>Nenhum backup automático ou slot salvo ainda. Use <b>Importar código</b> para colar um backup.</div>';
+    openModal({
+      title: '♻️ Restaurar progresso',
+      sub: 'Primeiro escolha a origem, depois confirme a restauração.',
+      body: body,
+      actions: [{ label: 'Fechar', cls: 'primary' }],
+      onMount: function (modal) {
+        $$('[data-restore]', modal).forEach(function (button) {
+          button.addEventListener('click', function () {
+            var id = button.dataset.restore;
+            var imported = id === 'auto' ? E.loadAutoBackup() : E.loadSlot(Number(id.split(':')[1]));
+            var source = sources.find(function (item) { return item.id === id; });
+            if (!imported || !source) { toast('Não foi possível ler esse backup.', 'bad'); return false; }
+            showRestoreConfirm(imported, source.label, onRestore);
+            return true;
+          });
+        });
+      }
+    });
+  }
+
   function showReset(onConfirm) {
     openModal({
       title: '🗑️ Recomeçar do zero?',
@@ -1612,6 +1762,7 @@
     scrollBehavior: scrollBehavior,
     tipForLowestStat: tipForLowestStat,
     toast: toast,
+    narrate: narrate,
     showSoundCue: showSoundCue,
     openModal: openModal,
     closeModal: closeModal,
@@ -1630,6 +1781,8 @@
     showChangelog: showChangelog,
     showExport: showExport,
     showImport: showImport,
+    showRestore: showRestore,
+    showStory: showStory,
     showReset: showReset,
     playFx: playFx,
     setActionFx: setActionFx,

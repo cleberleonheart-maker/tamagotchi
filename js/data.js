@@ -179,7 +179,9 @@
     { id: 'bamboo', name: 'Broto de bambu', emoji: '🎋', type: 'food', price: 96, hunger: 34, happiness: 8, weight: 2, xp: 13, desc: 'Crocante e leve. O lanche favorito da Coalinha.' },
     { id: 'compass', name: 'Bússola', emoji: '🧭', type: 'toy', price: 90, happiness: 26, discipline: 12, xp: 13, desc: 'Brincadeira que desperta o espírito explorador.' },
     { id: 'bell', name: 'Sininho', emoji: '🔔', type: 'accessory', price: 180, bonus: { happiness: 0.1, energy: 0.06 }, desc: 'Um som alegre que anima e cansa menos.' },
-    { id: 'shell', name: 'Concha brilhante', emoji: '🐚', type: 'decor', decor: 'seashell', price: 210, xp: 12, desc: 'Um brilho do mar para enfeitar o quarto.' }
+    { id: 'shell', name: 'Concha brilhante', emoji: '🐚', type: 'decor', decor: 'seashell', price: 210, xp: 12, desc: 'Um brilho do mar para enfeitar o quarto.' },
+    { id: 'berry', name: 'Fruta do bosque', emoji: '🫐', type: 'food', price: 42, hunger: 20, happiness: 8, weight: 1, xp: 8, desc: 'Pequena, doce e cheia de energia.' },
+    { id: 'postcard', name: 'Cartão postal', emoji: '💌', type: 'toy', price: 75, happiness: 24, discipline: 6, xp: 10, desc: 'Uma lembrança dos passeios e dos amigos.' }
   ];
 
   var QUESTS = [
@@ -269,7 +271,51 @@
   var VISITORS = [
     { id: 'vovo', name: 'Vovó Biju', emoji: '👵', msg: 'trouxe biscoitos e moedas', gift: { coins: 35, item: 'cookie', qty: 2 } },
     { id: 'fada', name: 'Fada madrinha', emoji: '✨', msg: 'deixou pó de figurinha', gift: { dust: 3 } },
-    { id: 'amigo', name: 'Amigo da escola', emoji: '🧑‍🤝‍🧑', msg: 'veio brincar e trouxe uma figurinha', gift: { coins: 10, sticker: true } }
+    { id: 'amigo', name: 'Amigo da escola', emoji: '🧑‍🤝‍🧑', msg: 'veio brincar e trouxe uma figurinha', gift: { coins: 10, sticker: true } },
+    { id: 'capitao', name: 'Capitão Bússola', emoji: '🧭', msg: 'contou histórias de viagem e trouxe um cartão', gift: { coins: 20, item: 'postcard', qty: 1 } }
+  ];
+
+  var COMPANIONS = [
+    {
+      id: 'vovo', name: 'Vovó Biju', emoji: '👵', trait: 'Culinária e carinho',
+      requests: [
+        { id: 'vovo-feed', key: 'feed', target: 3, coins: 32, item: 'cookie', qty: 1, affinity: 6, text: 'Alimente seu bichinho 3 vezes e ganhe um biscoito.' }
+      ],
+      stories: [
+        { id: 'vovo-receita', minAffinity: 6, title: 'A receita secreta', text: 'A Vovó Biju ensinou que o segredo da receita não é o açúcar: é preparar com calma e dividir com alguém.' },
+        { id: 'vovo-jardim', minAffinity: 14, title: 'O jardim da vovó', text: 'Ela contou que cada vaso da janela tem um nome. O seu favorito é o pequeno vaso de hortelã que nunca falta.' }
+      ]
+    },
+    {
+      id: 'fada', name: 'Fada madrinha', emoji: '✨', trait: 'Brilho e banhos',
+      requests: [
+        { id: 'fada-bath', key: 'bath', target: 2, coins: 38, item: 'perfume', qty: 1, affinity: 6, text: 'Dê 2 banhos e ganhe um perfume cheiroso.' }
+      ],
+      stories: [
+        { id: 'fada-varinha', minAffinity: 6, title: 'A varinha emprestada', text: 'A fada deixou a varinha sobre a mesa por uma noite. Seu bichinho olhou, piscou e decidiu que brilhar também é cuidar.' },
+        { id: 'fada-lua', minAffinity: 14, title: 'Pó de lua cheia', text: 'Ela guarda pó de lua em pequenos frascos. Só abre quando alguém aprende a acalmar um amigo sem dizer nada.' }
+      ]
+    },
+    {
+      id: 'amigo', name: 'Amigo da escola', emoji: '🧑‍🤝‍🧑', trait: 'Brincadeiras e trocas',
+      requests: [
+        { id: 'amigo-play', key: 'play', target: 3, coins: 30, item: 'ball', qty: 1, affinity: 6, text: 'Brinque 3 vezes e ganhe uma bola nova.' }
+      ],
+      stories: [
+        { id: 'amigo-recreio', minAffinity: 6, title: 'O recreio mais longo', text: 'Ele jurava que o recreio podia durar para sempre. Um dia, descobriu que bastava convidar alguém para brincar.' },
+        { id: 'amigo-caderno', minAffinity: 14, title: 'O caderno de desenhos', text: 'No caderno dele, cada bichinho do grupo tem uma página. A do seu está cheia de estrelas e rabiscos felizes.' }
+      ]
+    },
+    {
+      id: 'capitao', name: 'Capitão Bússola', emoji: '🧭', trait: 'Passeios e descobertas',
+      requests: [
+        { id: 'capitao-walk', key: 'walk', target: 2, coins: 44, item: 'postcard', qty: 1, affinity: 6, text: 'Faça 2 passeios e ganhe um cartão postal.' }
+      ],
+      stories: [
+        { id: 'capitao-mapa', minAffinity: 6, title: 'O mapa com rugas', text: 'O mapa do capitão tem uma mancha de chá no lugar onde deveria estar o norte. Ele diz que é ali que as melhores histórias começam.' },
+        { id: 'capitao-farol', minAffinity: 14, title: 'A luz do farol', text: 'Ele já viu o farol acender centenas de vezes, mas nunca viu duas noites iguais. Guarda cada uma num cartão diferente.' }
+      ]
+    }
   ];
 
   var EVENTS = [
@@ -380,7 +426,11 @@
     { id: 'fish_10', name: 'Pescador', emoji: '🎣', desc: 'Pesque 10 peixes.' },
     { id: 'checkin_7', name: 'Sete presentes', emoji: '🎁', desc: 'Faça check-in por 7 dias.' },
     { id: 'harvest_10', name: 'Horta produtiva', emoji: '🌾', desc: 'Colha 10 vezes na horta.' },
-    { id: 'visitor_3', name: 'Casa cheia', emoji: '🏡', desc: 'Receba 3 visitas de amigos.' }
+    { id: 'visitor_3', name: 'Casa cheia', emoji: '🏡', desc: 'Receba 3 visitas de amigos.' },
+    { id: 'walks_10', name: 'Explorador', emoji: '🧭', desc: 'Vá passear 10 vezes.' },
+    { id: 'friend_3', name: 'Círculo de amigos', emoji: '🤝', desc: 'Receba 3 companheiros diferentes.' },
+    { id: 'request_5', name: 'Amigo confiável', emoji: '✅', desc: 'Conclua 5 pedidos de companheiros.' },
+    { id: 'story_3', name: 'Histórias compartilhadas', emoji: '📖', desc: 'Desbloqueie 3 histórias de amizade.' }
   ];
 
   var MOODS = [
@@ -395,13 +445,22 @@
     { id: 'catch', name: 'Pega comida', emoji: '🍕', desc: 'Clique nas comidas antes que caiam.', color: '#ffb86b' },
     { id: 'tap', name: 'Tap Tap', emoji: '💥', desc: 'Toque nos corações que aparecem.', color: '#ff7ba9' },
     { id: 'memory', name: 'Memória', emoji: '🧠', desc: 'Repita a sequência de cores.', color: '#8b7bff' },
-    { id: 'fish', name: 'Pesca do clima', emoji: '🎣', desc: 'Pesque peixes que aparecem conforme o tempo.', color: '#6cc6ff' }
+    { id: 'fish', name: 'Pesca do clima', emoji: '🎣', desc: 'Pesque peixes que aparecem conforme o tempo.', color: '#6cc6ff' },
+    { id: 'quiz', name: 'Quiz do cuidado', emoji: '🧠', desc: 'Responda perguntas rápidas sobre cuidados.', color: '#a78bfa' },
+    { id: 'bubble', name: 'Bolhas em ordem', emoji: '🫧', desc: 'Estoure as bolhas na sequência certa.', color: '#67e8f9' }
   ];
 
   var SPEED_LABELS = { 1: 'Normal', 3: 'Rápida', 10: 'Turbo' };
 
-  var CONTRAST_LABELS = { normal: 'Padrão', high: 'Alto contraste' };
+  var CONTRAST_LABELS = { normal: 'Padrão', high: 'Alto contraste', max: 'Contraste máximo' };
   var FONT_LABELS = { normal: 'Normal', large: 'Ampliada' };
+  var SHORTCUT_LABELS = { Space: 'Espaço', KeyC: 'C', KeyJ: 'J', KeyG: 'G', KeyH: 'H', KeyF: 'F', Slash: '? (barra)' };
+  var SHORTCUT_OPTIONS = [
+    { key: 'feed', label: 'Fazer carinho', default: 'Space' },
+    { key: 'shop', label: 'Abrir loja', default: 'KeyC' },
+    { key: 'games', label: 'Minigame aleatório', default: 'KeyJ' },
+    { key: 'help', label: 'Abrir ajuda', default: 'Slash' }
+  ];
 
   var TUTORIAL = [
     { emoji: '👋', title: 'Bem-vindo ao TamaVida!', text: 'Seu bichinho nasceu de um ovo. Cuide dele para vê-lo crescer e evoluir.' },
@@ -466,7 +525,9 @@
     { id: 'beach', name: 'Praia', emoji: '🏖️', desc: 'Areia, conchas e um mergulho revigorante.', cost: 16, minLevel: 5, coins: [12, 22], xp: [12, 20], loot: ['sushi', 'cake', 'perfume'], hint: 'Médio • 16 ⚡' },
     { id: 'city', name: 'Cidade', emoji: '🏙️', desc: 'Vitrines, praças e o cheiro de padaria.', cost: 20, minLevel: 8, coins: [18, 30], xp: [18, 28], loot: ['cake', 'piano', 'musicbox'], hint: 'Difícil • 20 ⚡' },
     { id: 'botanic', name: 'Jardim botânico', emoji: '🌷', desc: 'Estufas, borboletas e um cheiro de terra molhada.', cost: 18, minLevel: 6, coins: [14, 24], xp: [14, 22], loot: ['melon', 'icecream', 'towel'], hint: 'Médio • 18 ⚡' },
-    { id: 'mountain', name: 'Montanha', emoji: '🏔️', desc: 'Ar puro, trilhas íngremes e vistas que valem o esforço.', cost: 24, minLevel: 10, coins: [22, 36], xp: [22, 34], loot: ['bamboo', 'compass', 'bell'], hint: 'Difícil • 24 ⚡' }
+    { id: 'mountain', name: 'Montanha', emoji: '🏔️', desc: 'Ar puro, trilhas íngremes e vistas que valem o esforço.', cost: 24, minLevel: 10, coins: [22, 36], xp: [22, 34], loot: ['bamboo', 'compass', 'bell'], hint: 'Difícil • 24 ⚡' },
+    { id: 'river', name: 'Rio sereno', emoji: '🏞️', desc: 'Água corrente, pedras lisas e frutas do bosque.', cost: 14, minLevel: 4, coins: [12, 20], xp: [10, 16], loot: ['berry', 'fish'], hint: 'Médio • 14 ⚡' },
+    { id: 'lighthouse', name: 'Farol da praia', emoji: '🗼', desc: 'Uma subida até a luz que brilha sobre o mar.', cost: 26, minLevel: 9, coins: [28, 44], xp: [24, 36], loot: ['postcard', 'shell', 'sushi'], hint: 'Difícil • 26 ⚡' }
   ];
 
   var ENEMIES = [
@@ -516,6 +577,16 @@
 
   var CHANGES = [
     {
+      version: 'v43',
+      title: 'Amigos, histórias e acessibilidade',
+      items: [
+        'Dois minijogos novos: Quiz do cuidado e Bolhas em ordem, além dos passeios Rio sereno e Farol da praia.',
+        'Companheiros recorrentes com afetividade, pedidos diários, presentes e histórias para desbloquear.',
+        'Contraste máximo, narração de eventos e atalhos de teclado personalizáveis.',
+        'Backup automático com restauração guiada, além de correções de navegação e do instalador.'
+      ]
+    },
+    {
       version: 'v42',
       title: 'Novas descobertas e cuidados',
       items: [
@@ -564,13 +635,14 @@
   ];
 
   global.TamaData = {
-    VERSION: 'v42',
+    VERSION: 'v43',
     CHANGES: CHANGES,
     STAGES: STAGES,
     SPECIES: SPECIES,
     PERSONALITIES: PERSONALITIES,
     PATHS: PATHS,
     VISITORS: VISITORS,
+    COMPANIONS: COMPANIONS,
     ITEMS: ITEMS,
     ACHIEVEMENTS: ACHIEVEMENTS,
     MOODS: MOODS,
@@ -594,6 +666,8 @@
     SPEED_LABELS: SPEED_LABELS,
     CONTRAST_LABELS: CONTRAST_LABELS,
     FONT_LABELS: FONT_LABELS,
+    SHORTCUT_LABELS: SHORTCUT_LABELS,
+    SHORTCUT_OPTIONS: SHORTCUT_OPTIONS,
     dayIndex: dayIndex,
     CHECKIN_ITEMS: CHECKIN_ITEMS,
     checkinItemForDay: checkinItemForDay,
@@ -623,6 +697,9 @@
     },
     visitor: function (id) {
       return VISITORS.find(function (visitor) { return visitor.id === id; }) || null;
+    },
+    companion: function (id) {
+      return COMPANIONS.find(function (companion) { return companion.id === id; }) || null;
     },
     stage: function (index) {
       return STAGES[Math.max(0, Math.min(STAGES.length - 1, index))];

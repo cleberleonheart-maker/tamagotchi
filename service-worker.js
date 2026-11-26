@@ -1,17 +1,17 @@
-const CACHE_NAME = 'tamavida-v42';
+const CACHE_NAME = 'tamavida-v43';
 const CACHE_PREFIX = 'tamavida-';
 const CACHE_VERSION = CACHE_NAME.slice(CACHE_PREFIX.length).replace('v', '');
 const APP_SHELL = [
   './',
   './index.html',
-  './styles.css?v=42',
-  './js/data.js?v=42',
-  './js/audio.js?v=42',
-  './js/engine.js?v=42',
-  './js/games.js?v=42',
-  './js/ui.js?v=42',
-  './js/app.js?v=42',
-  './manifest.json?v=42',
+  './styles.css?v=43',
+  './js/data.js?v=43',
+  './js/audio.js?v=43',
+  './js/engine.js?v=43',
+  './js/games.js?v=43',
+  './js/ui.js?v=43',
+  './js/app.js?v=43',
+  './manifest.json?v=43',
   './icons/icon-180.png',
   './icons/icon-192.png',
   './icons/icon-512.png',

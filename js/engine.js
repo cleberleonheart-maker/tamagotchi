@@ -3,6 +3,7 @@
 
   var DATA = global.TamaData;
   var STORAGE_KEY = 'tamavida.save.v1';
+  var AUTO_BACKUP_KEY = 'tamavida.autoBackup.v1';
   var MAX_AGE_MINUTES_PER_TICK = 720;
   var MAX_PETS = 4;
 
@@ -515,6 +516,7 @@
     var daily = ensureDaily(state, timestamp);
     var completed = [];
     logCareDay(state, key, amount, timestamp);
+    bumpCompanionRequests(state, key, amount, timestamp);
     bumpRanking(state, key, amount);
     bumpWeeklyQuest(state, key, amount, timestamp);
     daily.quests.forEach(function (quest) {
@@ -545,14 +547,16 @@
       updatedAt: now(),
       settings: {
         sound: true, music: false, ambientSound: true, notifications: false, reminderMorning: '08:00', reminderEvening: '20:00',
-        speed: 3, theme: 'auto', contrast: 'normal', fontSize: 'normal', reduceMotion: false, visualCues: true, vibration: true
+        speed: 3, theme: 'auto', contrast: 'normal', fontSize: 'normal', reduceMotion: false, visualCues: true, vibration: true,
+        narration: false, shortcuts: { feed: 'Space', shop: 'KeyC', games: 'KeyJ', help: 'Slash' }
       },
       lastExportAt: 0,
       coins: 150,
       inventory: { apple: 3, soap: 1 },
       totals: {
         feeds: 0, plays: 0, games: 0, baths: 0, trains: 0, crafted: 0, cooked: 0, trades: 0, fished: 0,
-        gifts: 0, focus: 0, deals: 0, moments: 0, walks: 0, battles: 0, wins: 0, bosses: 0, visits: 0, earned: 0, checkins: 0, adopted: []
+        gifts: 0, focus: 0, deals: 0, moments: 0, walks: 0, battles: 0, wins: 0, bosses: 0, visits: 0, earned: 0, checkins: 0,
+        companionRequests: 0, companionStories: 0, adopted: []
       },
       achievements: {},
       daily: { date: '', quests: [], checkin: null },
@@ -570,6 +574,7 @@
       focus: { running: false, mode: 'focus', minutes: 25, task: '', endsAt: 0, remaining: 25 * 60000 },
       focusLog: {},
       moments: [],
+      companions: { day: '', friends: {} },
       adventure: { walks: 0, battles: 0, wins: 0, bosses: 0, lastWalk: null, battle: null },
       activeDecor: null,
       pets: [],
@@ -600,6 +605,11 @@
   function validTime(value, fallback) {
     var text = String(value || '');
     return /^([01]\d|2[0-3]):[0-5]\d$/.test(text) ? text : fallback;
+  }
+
+  function validDay(value) {
+    var text = String(value || '');
+    return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : '';
   }
 
   function sanitizePet(raw) {
@@ -669,12 +679,18 @@
       reminderEvening: validTime(settings.reminderEvening, '20:00'),
       speed: [1, 3, 10].indexOf(Number(settings.speed)) !== -1 ? Number(settings.speed) : 3,
       theme: ['auto', 'day', 'night'].indexOf(settings.theme) !== -1 ? settings.theme : 'auto',
-      contrast: ['normal', 'high'].indexOf(settings.contrast) !== -1 ? settings.contrast : 'normal',
+      contrast: ['normal', 'high', 'max'].indexOf(settings.contrast) !== -1 ? settings.contrast : 'normal',
       fontSize: ['normal', 'large'].indexOf(settings.fontSize) !== -1 ? settings.fontSize : 'normal',
       reduceMotion: settings.reduceMotion === true,
       visualCues: settings.visualCues !== false,
-      vibration: settings.vibration !== false
+      vibration: settings.vibration !== false,
+      narration: settings.narration === true,
+      shortcuts: {}
     };
+    var shortcuts = settings.shortcuts || {};
+    DATA.SHORTCUT_OPTIONS.forEach(function (option) {
+      state.settings.shortcuts[option.key] = DATA.SHORTCUT_LABELS[shortcuts[option.key]] ? shortcuts[option.key] : option.default;
+    });
     state.lastExportAt = num(raw.lastExportAt, 0, 0, Date.now() + 86400000);
     state.createdAt = num(raw.createdAt, now(), 0, Date.now() + 86400000);
     state.updatedAt = num(raw.updatedAt, now(), 0, Date.now() + 86400000);
@@ -686,7 +702,7 @@
       if (item && quantity > 0) state.inventory[id] = quantity;
     });
     var totals = raw.totals || {};
-    ['feeds', 'plays', 'games', 'baths', 'trains', 'crafted', 'cooked', 'trades', 'fished', 'gifts', 'focus', 'deals', 'moments', 'walks', 'battles', 'wins', 'bosses', 'visits', 'earned', 'checkins'].forEach(function (key) {
+    ['feeds', 'plays', 'games', 'baths', 'trains', 'crafted', 'cooked', 'trades', 'fished', 'gifts', 'focus', 'deals', 'moments', 'walks', 'battles', 'wins', 'bosses', 'visits', 'earned', 'checkins', 'companionRequests', 'companionStories'].forEach(function (key) {
       state.totals[key] = Math.floor(num(totals[key], 0, 0, 1000000000));
     });
     state.totals.adopted = (Array.isArray(totals.adopted) ? totals.adopted : []).filter(function (id) {
@@ -883,6 +899,40 @@
         })
       };
     }
+    var rawCompanions = raw.companions || {};
+    state.companions = { day: validDay(rawCompanions.day), friends: {} };
+    Object.keys(rawCompanions.friends || {}).forEach(function (id) {
+      var companion = DATA.companion(id);
+      if (!companion) return;
+      var rawFriend = rawCompanions.friends[id] || {};
+      var friend = {
+        affinity: Math.floor(num(rawFriend.affinity, 0, 0, 100000)),
+        visits: savedCounter(rawFriend.visits, 0),
+        lastDay: validDay(rawFriend.lastDay),
+        request: null,
+        stories: {}
+      };
+      var rawRequest = rawFriend.request;
+      var request = rawRequest && companion.requests.find(function (item) { return item.id === rawRequest.id; });
+      if (request) {
+        friend.request = {
+          id: request.id,
+          day: validDay(rawRequest.day),
+          progress: Math.floor(num(rawRequest.progress, 0, 0, request.target)),
+          claimed: rawRequest.claimed === true
+        };
+      }
+      companion.stories.forEach(function (story) {
+        var rawStory = rawFriend.stories && rawFriend.stories[story.id];
+        if (!rawStory) return;
+        friend.stories[story.id] = {
+          unlockedAt: num(rawStory.unlockedAt || rawStory, now(), 0, Date.now() + 86400000),
+          readAt: num(rawStory.readAt, 0, 0, Date.now() + 86400000)
+        };
+      });
+      state.companions.friends[id] = friend;
+    });
+    ensureCompanions(state, state.updatedAt);
     return state;
   }
 
@@ -1036,12 +1086,20 @@
     if (state.totals.deals >= 5) tryUnlock('deals_5');
     if (state.totals.moments >= 5) tryUnlock('moment_5');
     if (state.totals.walks >= 5) tryUnlock('walk_5');
+    if (state.totals.walks >= 10) tryUnlock('walks_10');
     if (state.totals.battles >= 10) tryUnlock('battle_10');
     if (state.totals.bosses > 0) tryUnlock('boss');
     if (state.totals.fished >= 10) tryUnlock('fish_10');
     if (state.totals.checkins >= 7) tryUnlock('checkin_7');
     if ((state.garden && state.garden.harvested || 0) >= 10) tryUnlock('harvest_10');
     if (state.totals.visits >= 3) tryUnlock('visitor_3');
+    var metCompanions = DATA.COMPANIONS.filter(function (companion) {
+      var friend = state.companions && state.companions.friends && state.companions.friends[companion.id];
+      return friend && friend.visits > 0;
+    }).length;
+    if (metCompanions >= 3) tryUnlock('friend_3');
+    if (state.totals.companionRequests >= 5) tryUnlock('request_5');
+    if (state.totals.companionStories >= 3) tryUnlock('story_3');
 
     if (pet) {
       if (pet.level >= 5) tryUnlock('level_5');
@@ -1123,6 +1181,124 @@
     if (list.length > 150) list.splice(0, list.length - 150);
   }
 
+  function companionFriend(state, id) {
+    if (!state.companions || typeof state.companions !== 'object') state.companions = { day: '', friends: {} };
+    if (!state.companions.friends || typeof state.companions.friends !== 'object') state.companions.friends = {};
+    var companion = DATA.companion(id);
+    if (!companion) return null;
+    var friend = state.companions.friends[id];
+    if (!friend || typeof friend !== 'object') friend = { affinity: 0, visits: 0, lastDay: '', request: null, stories: {} };
+    if (!friend.stories || typeof friend.stories !== 'object') friend.stories = {};
+    friend.affinity = Math.floor(num(friend.affinity, 0, 0, 100000));
+    friend.visits = savedCounter(friend.visits, 0);
+    state.companions.friends[id] = friend;
+    return friend;
+  }
+
+  function ensureCompanions(state, timestamp) {
+    if (!state) return;
+    var time = timestamp || now();
+    var day = dateKey(new Date(time));
+    var needsReset = !state.companions || state.companions.day !== day;
+    var friends = (state.companions && state.companions.friends) || {};
+    if (!needsReset) {
+      needsReset = DATA.COMPANIONS.some(function (companion) {
+        var friend = friends[companion.id];
+        return !friend || !friend.request || friend.request.day !== day;
+      });
+    }
+    if (!needsReset) return;
+    if (!state.companions || typeof state.companions !== 'object') state.companions = { day: '', friends: {} };
+    state.companions.day = day;
+    var index = DATA.dayIndex(new Date(time));
+    DATA.COMPANIONS.forEach(function (companion, offset) {
+      var friend = companionFriend(state, companion.id);
+      if (!friend) return;
+      var request = companion.requests[(index + offset) % companion.requests.length];
+      friend.request = { id: request.id, day: day, progress: 0, claimed: false };
+    });
+  }
+
+  function unlockCompanionStories(state, companion, friend, timestamp) {
+    var unlocked = [];
+    var time = timestamp || now();
+    companion.stories.forEach(function (story) {
+      if (friend.affinity < story.minAffinity || friend.stories[story.id]) return;
+      friend.stories[story.id] = { unlockedAt: time, readAt: 0 };
+      state.totals.companionStories = Math.floor(num(state.totals.companionStories, 0, 0, 1000000) + 1);
+      addLog(state, '📖 Nova história: ' + story.title + ' — ' + companion.name, 'achievement');
+      unlocked.push(story);
+    });
+    return unlocked;
+  }
+
+  function bumpCompanionRequests(state, key, amount, timestamp) {
+    if (!state || !state.totals) return [];
+    ensureCompanions(state, timestamp);
+    var day = dateKey(new Date(timestamp || now()));
+    var completed = [];
+    DATA.COMPANIONS.forEach(function (companion) {
+      var friend = companionFriend(state, companion.id);
+      if (!friend || !friend.request || friend.request.day !== day || friend.request.claimed) return;
+      var request = companion.requests.find(function (item) { return item.id === friend.request.id; });
+      if (!request || request.key !== key) return;
+      friend.request.progress = Math.min(request.target, friend.request.progress + Math.max(0, clamp(amount, 0, 99)));
+      if (friend.request.progress < request.target) return;
+      friend.request.claimed = true;
+      friend.affinity = Math.floor(num(friend.affinity, 0, 0, 100000) + request.affinity);
+      state.totals.companionRequests = Math.floor(num(state.totals.companionRequests, 0, 0, 1000000) + 1);
+      state.coins += request.coins;
+      state.totals.earned += request.coins;
+      if (request.item && DATA.item(request.item)) {
+        var quantity = Math.floor(num(request.qty, 1, 1, 20));
+        state.inventory[request.item] = (state.inventory[request.item] || 0) + quantity;
+      }
+      var stories = unlockCompanionStories(state, companion, friend, timestamp);
+      addMoment(state, 'Pedido de ' + companion.name + ' concluído', request.text + ' +' + request.coins + ' 🪙');
+      addLog(state, '✅ Pedido de ' + companion.name + ' concluído: +' + request.coins + ' 🪙', 'good');
+      checkAchievements(state, activePet(state));
+      completed.push({ companion: companion, request: request, stories: stories });
+    });
+    return completed;
+  }
+
+  function visitCompanion(state, companion, time, notes) {
+    ensureCompanions(state, time);
+    var friend = companionFriend(state, companion.id);
+    var day = dateKey(new Date(time));
+    friend.visits += 1;
+    friend.lastDay = day;
+    var gain = 4 + (friend.visits % 3 === 0 ? 2 : 0);
+    friend.affinity = Math.floor(num(friend.affinity, 0, 0, 100000) + gain);
+    notes.push('amizade +' + gain);
+    if (friend.visits === 1) notes.push('nova amizade');
+    var stories = unlockCompanionStories(state, companion, friend, time);
+    stories.forEach(function (story) { notes.push('história: ' + story.title); });
+    if (friend.request && !friend.request.claimed) {
+      var request = companion.requests.find(function (item) { return item.id === friend.request.id; });
+      if (request) notes.push('pedido ' + friend.request.progress + '/' + request.target);
+    }
+    return { friend: friend, stories: stories };
+  }
+
+  function readCompanionStory(state, companionId, storyId) {
+    if (!state) return null;
+    var companion = DATA.companion(companionId);
+    if (!companion) return null;
+    var story = companion.stories.find(function (item) { return item.id === storyId; });
+    if (!story) return null;
+    var friend = companionFriend(state, companionId);
+    if (!friend || !friend.stories[story.id]) return null;
+    var record = friend.stories[story.id];
+    var firstRead = !record.readAt;
+    if (firstRead) {
+      record.readAt = now();
+      addMoment(state, 'História: ' + story.title, companion.name + ' contou: ' + story.text);
+      addLog(state, '📖 História lida: ' + story.title, 'good');
+    }
+    return { companion: companion, story: story, firstRead: firstRead };
+  }
+
   function checkVisitors(state, timestamp, roll) {
     var time = timestamp || now();
     if (!state || !activePet(state)) return null;
@@ -1131,6 +1307,7 @@
     var chance = typeof roll === 'number' ? roll : Math.random();
     if (chance > 0.35) return null;
     var visitor = pick(DATA.VISITORS);
+    var companion = DATA.companion(visitor.id);
     var gift = visitor.gift || {};
     var notes = [];
     state.lastVisitAt = time;
@@ -1158,19 +1335,21 @@
         notes.push(sticker.emoji + ' ' + sticker.name);
       }
     }
+    var companionInfo = companion ? visitCompanion(state, companion, time, notes) : null;
     var pet = activePet(state);
     pet.message = visitor.name + ' ' + visitor.msg + '!';
     addMoment(state, 'Visita de ' + visitor.name, notes.join(' • '));
     addLog(state, '👋 ' + visitor.name + ' ' + visitor.msg + ': ' + notes.join(', '), 'good');
     unlock(state, 'visitor_1');
     checkAchievements(state, pet);
-    return { visitor: visitor, notes: notes, sticker: sticker };
+    return { visitor: visitor, notes: notes, sticker: sticker, companion: companionInfo };
   }
 
   function tick(state, timestamp) {
     if (!state) return { evolved: false, stageUp: null, revived: false };
     var time = timestamp || now();
     var elapsed = Math.max(0, time - (state.updatedAt || time));
+    ensureCompanions(state, time);
     var events = {
       evolved: false, stageUp: null, evolvedName: null, died: false, criticalName: null, sick: false, sickName: null,
       streak: null, birthday: [], sticker: null, focus: null, visitor: null
@@ -1858,6 +2037,58 @@
     }
   }
 
+  function autoBackup(state) {
+    try {
+      var pet = activePet(state);
+      var payload = {
+        savedAt: now(),
+        name: pet ? pet.name : '',
+        coins: Math.floor(num(state.coins, 0, 0, 1000000000)),
+        code: exportSave(state)
+      };
+      global.localStorage.setItem(AUTO_BACKUP_KEY, JSON.stringify(payload));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function readAutoBackupPayload() {
+    try {
+      var raw = global.localStorage && global.localStorage.getItem(AUTO_BACKUP_KEY);
+      if (!raw) return null;
+      var payload = JSON.parse(raw);
+      if (!payload || typeof payload.code !== 'string' || !payload.code) return null;
+      return payload;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function autoBackupInfo() {
+    var payload = readAutoBackupPayload();
+    if (!payload) return null;
+    return {
+      savedAt: num(payload.savedAt, 0, 0, Date.now() + 86400000),
+      name: String(payload.name || 'Bichinho').slice(0, 18),
+      coins: Math.floor(num(payload.coins, 0, 0, 1000000000))
+    };
+  }
+
+  function loadAutoBackup() {
+    var payload = readAutoBackupPayload();
+    return payload ? importSave(payload.code) : null;
+  }
+
+  function clearAutoBackup() {
+    try {
+      if (global.localStorage) global.localStorage.removeItem(AUTO_BACKUP_KEY);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   function statsSummary(state) {
     var keys = ['hunger', 'happiness', 'energy', 'hygiene', 'health'];
     var records = {};
@@ -1919,6 +2150,10 @@
     exchangeSticker: exchangeSticker,
     choosePath: choosePath,
     checkVisitors: checkVisitors,
+    companionFriend: companionFriend,
+    ensureCompanions: ensureCompanions,
+    bumpCompanionRequests: bumpCompanionRequests,
+    readCompanionStory: readCompanionStory,
     focusStart: focusStart,
     focusStop: focusStop,
     focusTick: focusTick,
@@ -1963,6 +2198,10 @@
     unlock: unlock,
     exportSave: exportSave,
     importSave: importSave,
+    autoBackup: autoBackup,
+    autoBackupInfo: autoBackupInfo,
+    loadAutoBackup: loadAutoBackup,
+    clearAutoBackup: clearAutoBackup,
     statusText: statusText
   };
 })(window);
